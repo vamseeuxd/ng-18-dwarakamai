@@ -20,57 +20,17 @@ import {
   MatDialogContent,
   MatDialogTitle,
 } from "@angular/material/dialog";
-
-export interface IItem {
-  id: string;
-  name: string;
-}
-
-export interface IVehicle extends IItem {
-  color: string;
-  make: string;
-  flat: string;
-  type: string;
-}
-
-export interface IIncome extends IItem {
-  month: string;
-  flats: string[];
-  amount: number;
-}
-
-export interface IInventoryItem extends IItem {
-  name: string;
-  floor: string;
-  status: string;
-  cost: null | number;
-}
-
-export type IDefaultValues = Record<
-  string,
-  string | number | boolean | null | string[]
->;
-
-export interface IPage {
-  signlerName: string;
-  id: string;
-  name: string;
-  itemLabelCallBack: (item: any) => string;
-  items: IItem[];
-  formConfig: IFormConfig[];
-  onFormChange: (form: NgForm, valueChanged: string) => void;
-  defaultValues: IDefaultValues;
-}
-
-export interface IFormConfig {
-  type: "text" | "dropdown" | "number" | "month" | "multi-select";
-  id: string;
-  name: string;
-  label: string;
-  required: boolean;
-  defaultValue: string | number | null;
-  dataProvider: (form: NgForm) => IItem[];
-}
+import {
+  IItem,
+  IVehicle,
+  IIncome,
+  IInventoryItem,
+  IPage,
+  IDefaultValues,
+  getPage,
+  IExpenses,
+} from "./interfaces";
+import moment from "moment";
 
 @Component({
   selector: "app-component",
@@ -127,6 +87,13 @@ export class AppComponent {
     { name: "Floor 4", id: "floor_4" },
     { name: "Ground Floor", id: "Ground Floor" },
     { name: "Building", id: "Building" },
+  ];
+
+  vendors: IItem[] = [
+    { name: "Vendor-1", id: "vendor_1" },
+    { name: "Vendor-2", id: "vendor_2" },
+    { name: "Vendor-3", id: "vendor_3" },
+    { name: "Vendor-4", id: "vendor_4" },
   ];
 
   vehicleTypes: IItem[] = [
@@ -194,15 +161,26 @@ export class AppComponent {
     },
   ];
 
-  expenses: IItem[] = [];
+  expenses: IExpenses[] = [
+    {
+      name: "Some Repair",
+      floor: "floor_1",
+      inventoryItem: "1722525320025",
+      amount: 5000,
+      vendor: "vendor_1",
+      startDate: "2024-12-01",
+      settledDate: "2024-12-31",
+      id: "1722535772976",
+    },
+  ];
 
   pages: IPage[] = [
-    {
-      signlerName: "Flat",
-      id: "flats",
-      name: "Flats",
-      items: this.flats,
-      formConfig: [
+    getPage(
+      "Flat",
+      "flats",
+      "Flats",
+      this.flats,
+      [
         {
           type: "text",
           id: "name",
@@ -213,18 +191,16 @@ export class AppComponent {
           required: true,
         },
       ],
-      defaultValues: { name: "" },
-      itemLabelCallBack: (item: IItem): string => {
-        return item.name;
-      },
-      onFormChange: (form: NgForm, valueChanged: string): void => {},
-    },
-    {
-      signlerName: "Floor",
-      id: "floors",
-      name: "Floors",
-      items: this.floors,
-      formConfig: [
+      { name: "" },
+      (item) => item.name,
+      (form: NgForm, valueChanged: string): void => {}
+    ),
+    getPage(
+      "Floor",
+      "floors",
+      "Floors",
+      this.floors,
+      [
         {
           type: "text",
           id: "name",
@@ -235,18 +211,40 @@ export class AppComponent {
           required: false,
         },
       ],
-      defaultValues: { name: "" },
-      itemLabelCallBack: (item: IItem): string => {
+      { name: "" },
+      (item: IItem): string => {
         return item.name;
       },
-      onFormChange: (form: NgForm, valueChanged: string): void => {},
-    },
-    {
-      signlerName: "Expense",
-      id: "expenses",
-      name: "Expenses",
-      items: this.expenses,
-      formConfig: [
+      (form: NgForm, valueChanged: string): void => {}
+    ),
+    getPage(
+      "Vendor",
+      "vendors",
+      "Vendors",
+      this.vendors,
+      [
+        {
+          type: "text",
+          id: "name",
+          name: "name",
+          defaultValue: "",
+          dataProvider: () => [],
+          label: "New Floor Name",
+          required: false,
+        },
+      ],
+      { name: "" },
+      (item: IItem): string => {
+        return item.name;
+      },
+      (form: NgForm, valueChanged: string): void => {}
+    ),
+    getPage(
+      "Expense",
+      "expenses",
+      "Expenses",
+      this.expenses,
+      [
         {
           type: "text",
           id: "name",
@@ -285,23 +283,64 @@ export class AppComponent {
           label: "Amount in ₹",
           required: true,
         },
+        {
+          type: "dropdown",
+          id: "vendor",
+          name: "vendor",
+          defaultValue: "",
+          dataProvider: () => this.vendors,
+          label: "Vendor",
+          required: true,
+        },
+        {
+          type: "date",
+          id: "startDate",
+          name: "startDate",
+          defaultValue: "",
+          dataProvider: () => this.vendors,
+          label: "Start Date",
+          required: true,
+        },
+        {
+          type: "date",
+          id: "settledDate",
+          name: "settledDate",
+          defaultValue: "",
+          dataProvider: () => this.vendors,
+          label: "Settled Date",
+          required: true,
+        },
       ],
-      defaultValues: { name: "" },
-      itemLabelCallBack: (item: IItem): string => {
-        return item.name;
+      {
+        name: "",
+        floor: "",
+        inventoryItem: "",
+        amount: "",
+        vendor: "",
       },
-      onFormChange: (form: NgForm, valueChanged: string): void => {
+      (item: IExpenses): string => {
+        /* prettier-ignore */
+        return `<h6 class="mb-2 pb-3 border-bottom">${item.name}</h6>
+                <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Amount : ${new Intl.NumberFormat( "en-IN" ).format(item.amount || 0)} ₹</div>
+                <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Inventory Item : ${ this.inventory.find((f) => f.id == item.inventoryItem)?.name }</div>
+                <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Floor : ${ this.floors.find((f) => f.id == item.floor)?.name }</div>
+                <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Vendor : ${ this.vendors.find((f) => f.id == item.vendor)?.name }</div>
+                <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Start Date : ${ moment(item.startDate).format('DD-MMMM-yyyy')  }</div>
+                <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Settled Date : ${ moment(item.settledDate).format('DD-MMMM-yyyy') }</div>
+                `;
+      },
+      (form: NgForm, valueChanged: string): void => {
         if (valueChanged === "floor") {
           form.controls.inventoryItem.setValue("");
         }
-      },
-    },
-    {
-      signlerName: "Income",
-      id: "income",
-      name: "Income",
-      items: this.incomes,
-      formConfig: [
+      }
+    ),
+    getPage(
+      "Income",
+      "income",
+      "Income",
+      this.incomes,
+      [
         {
           type: "text",
           id: "name",
@@ -339,47 +378,29 @@ export class AppComponent {
           required: true,
         },
       ],
-      defaultValues: {
+      {
         name: "",
         id: "",
         month: "",
         flats: [],
         amount: 0,
       },
-      itemLabelCallBack: (item: IIncome): string => {
+      (item: IIncome): string => {
+        /* prettier-ignore */
         return `<h6 class="mb-2 pb-3 border-bottom">${item.name}</h6>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Amount for Flat : ${new Intl.NumberFormat(
-          "en-IN"
-        ).format(item.amount || 0)} ₹</div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Amount for ${
-          item.flats.length
-        } Flats : ${new Intl.NumberFormat("en-IN").format(
-          item.amount * item.flats.length || 0
-        )} ₹</div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Month : ${
-          item.month
-        }</div>
-        <div class="p-2 m-2 border shadow-sm">
-          <p class="m-0 p-0 border-bottom pb-1 mb-1">Flats Needs to Pay : </p>
-          ${item.flats
-            .map((f) => {
-              return `<div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${this.getItemNameById(
-                this.flats,
-                f
-              )}</div>`;
-            })
-            .join("")}
-        </div>
-        `;
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Amount for Flat : ${new Intl.NumberFormat( "en-IN" ).format(item.amount || 0)} ₹</div>
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Amount for ${ item.flats.length } Flats : ${new Intl.NumberFormat("en-IN").format( item.amount * item.flats.length || 0 )} ₹</div>
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">Month : ${ item.month }</div>
+        <div class="p-2 m-2 border shadow-sm"> <p class="m-0 p-0 border-bottom pb-1 mb-1">Flats Needs to Pay : </p> ${item.flats .map((f) => { return `<div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${this.getItemNameById( this.flats, f )}</div>`; }) .join("")} </div> `;
       },
-      onFormChange: (form: NgForm, valueChanged: string): void => {},
-    },
-    {
-      signlerName: "Inventory Item",
-      id: "inventory",
-      name: "Inventory",
-      items: this.inventory,
-      formConfig: [
+      (form: NgForm, valueChanged: string): void => {}
+    ),
+    getPage(
+      "Inventory Item",
+      "inventory",
+      "Inventory",
+      this.inventory,
+      [
         {
           type: "text",
           id: "name",
@@ -417,32 +438,27 @@ export class AppComponent {
           required: true,
         },
       ],
-      defaultValues: {
+      {
         name: "",
         floor: "",
         status: "",
         cost: null,
       },
-      itemLabelCallBack: (item: IInventoryItem): string => {
+      (item: IInventoryItem): string => {
+        /* prettier-ignore */
         return `<h6 class="mb-2 pb-2 border-bottom">${item.name}</h6>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${
-          this.floors.find((f) => f.id == item.floor)?.name
-        }</div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${
-          this.inventoryItemStatus.find((f) => f.id == item.status)?.name
-        }</div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${new Intl.NumberFormat(
-          "en-IN"
-        ).format(item.cost || 0)} ₹</div>`;
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ this.floors.find((f) => f.id == item.floor)?.name }</div>
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ this.inventoryItemStatus.find((f) => f.id == item.status)?.name }</div>
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${new Intl.NumberFormat( "en-IN" ).format(item.cost || 0)} ₹</div>`;
       },
-      onFormChange: (form: NgForm, valueChanged: string): void => {},
-    },
-    {
-      signlerName: "Vehicle",
-      id: "Vehicles",
-      name: "Vehicles",
-      items: this.vehicles,
-      formConfig: [
+      (form: NgForm, valueChanged: string): void => {}
+    ),
+    getPage(
+      "Vehicle",
+      "Vehicles",
+      "Vehicles",
+      this.vehicles,
+      [
         {
           type: "text",
           id: "name",
@@ -489,39 +505,31 @@ export class AppComponent {
           required: true,
         },
       ],
-      defaultValues: {
+      {
         name: "",
         color: "",
         make: "",
         flat: "",
         type: "",
       },
-      itemLabelCallBack: (item: IVehicle): string => {
+      (item: IVehicle): string => {
+        /* prettier-ignore */
         return `<h6 class="mb-2 pb-2 border-bottom">${item.name}</h6>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${
-          item.color
-        } color</div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${
-          item.make
-        }</div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${
-          this.flats.find((f) => f.id == item.flat)?.name
-        }</div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${
-          this.vehicleTypes.find((v) => v.id == item.type)?.name
-        }</div>`;
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ item.color } color</div>
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ item.make }</div>
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ this.flats.find((f) => f.id == item.flat)?.name }</div>
+        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ this.vehicleTypes.find((v) => v.id == item.type)?.name }</div>`;
       },
-      onFormChange: (form: NgForm, valueChanged: string): void => {},
-    },
+      (form: NgForm, valueChanged: string): void => {}
+    ),
   ];
-  activePage: IPage = this.pages[2];
+  activePage: IPage = this.pages[3];
 
   addItem(
     addOrEditDialogRef: TemplateRef<any>,
     defaultValues: IDefaultValues,
     isEdit = false
   ) {
-    console.log(defaultValues);
     const dialogRef = this.dialog.open(addOrEditDialogRef, {
       data: {
         title: `${isEdit ? "Update" : "Add New"} ${
@@ -556,10 +564,6 @@ export class AppComponent {
       },
     });
   }
-
-  /* displayFn(item: IItem): string {
-    return item && item.name ? item.name : '';
-  } */
 
   displayFn(items: IItem[]): (value: any) => string {
     return (val: any) => {
