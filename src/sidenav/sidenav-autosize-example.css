@@ -1,0 +1,11 @@
+mat-drawer-container {
+  display: block;
+  width: calc(100vw - 16px);
+  height: calc(100vh - 16px);
+  margin: 8px 8px;
+}
+.close-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}

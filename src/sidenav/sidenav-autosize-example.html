@@ -1,0 +1,29 @@
+<mat-drawer-container autosize class="border shadow" [hasBackdrop]="true">
+  <mat-drawer
+    #drawer
+    class="border shadow-sm rounded-0"
+    mode="over"
+    opened
+    style="width: 220px"
+  >
+    <button mat-icon-button class="close-button" (click)="drawer.toggle()">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <ul class="list-group rounded-0">
+      @for(page of pages; track page.id){
+      <li matRipple role="button" class="list-group-item rounded-0">
+        {{page.name}}
+      </li>
+      }
+    </ul>
+  </mat-drawer>
+
+  <mat-toolbar style="background: #ffd9e1">
+    <button mat-icon-button class="open-button" (click)="drawer.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span>Apartment Management</span>
+    <span class="example-spacer"></span>
+  </mat-toolbar>
+</mat-drawer-container>
