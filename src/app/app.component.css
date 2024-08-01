@@ -9,3 +9,8 @@ mat-drawer-container {
   top: 5px;
   right: 5px;
 }
+.add-button{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}

@@ -1,4 +1,4 @@
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 
 $theme: mat.define-theme(
   (
@@ -12,7 +12,7 @@ $theme: mat.define-theme(
 
 body {
   @include mat.all-component-themes($theme);
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
   margin: 0;
   padding: 0px;
   height: 100%;
@@ -25,3 +25,9 @@ html {
 
 @include mat.core();
 @include mat.color-variants-backwards-compatibility($theme);
+
+.list-group {
+  --bs-list-group-active-color: var(--bs-body-color);
+  --bs-list-group-active-bg: #ff93a9;
+  --bs-list-group-active-border-color: #ff93a9;
+}
