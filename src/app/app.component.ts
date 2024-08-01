@@ -1,4 +1,13 @@
-import { Component, inject, TemplateRef, viewChild } from "@angular/core";
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  TemplateRef,
+  viewChild,
+  WritableSignal,
+} from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -39,6 +48,15 @@ import { ExpensesService } from "./services/expenses/expenses.service";
 import { InventoryService } from "./services/inventory/inventory.service";
 import { VehiclesService } from "./services/Vehicles/vehicles.service";
 import { IncomeService } from "./services/income/income.service";
+import { toSignal } from "@angular/core/rxjs-interop";
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  Subject,
+  tap,
+} from "rxjs";
 
 @Component({
   selector: "app-component",
@@ -78,16 +96,58 @@ export class AppComponent {
   readonly incomeService = inject(IncomeService);
   getItemNameById = getItemNameById;
 
-  pages: IPage[] = [
-    this.flatsService.getPage(),
-    this.floorsService.getPage(),
-    this.vendorsService.getPage(),
-    this.expensesService.getPage(this.floorsService.floors, this.inventoryService.inventory, this.vendorsService.vendors),
-    this.incomeService.getPage(this.flatsService.flats),
-    this.inventoryService.getPage(this.floorsService.floors, this.inventoryService.inventoryItemStatus),
-    this.vehiclesService.getPage(this.flatsService.flats),
-  ];
-  activePage: IPage = this.pages[3];
+  pages$: Observable<IPage[]> = combineLatest([
+    this.flatsService.flats$,
+    this.floorsService.floors$,
+    this.vendorsService.vendors$,
+    this.expensesService.expenses$,
+    this.inventoryService.inventory$,
+    this.vehiclesService.vehicleTypes$,
+    this.vehiclesService.vehicles$,
+    this.incomeService.incomes$,
+    this.inventoryService.inventoryItemStatus$,
+  ]).pipe(
+    map(
+      ([
+        flats,
+        floors,
+        vendors,
+        expenses,
+        inventory,
+        vehicleTypes,
+        vehicles,
+        incomes,
+        inventoryItemStatus,
+      ]) => {
+        return [
+          this.flatsService.getPage(flats),
+          this.floorsService.getPage(floors),
+          this.vendorsService.getPage(vendors),
+          this.expensesService.getPage(floors, inventory, vendors, expenses),
+          this.inventoryService.getPage(floors, inventoryItemStatus, inventory),
+          this.vehiclesService.getPage(flats, vehicles, vehicleTypes),
+          this.incomeService.getPage(flats, incomes),
+        ];
+      }
+    )
+  );
+
+  pages = toSignal<IPage[]>(this.pages$);
+  activePage: WritableSignal<IPage | null> = signal<IPage | null>(null);
+
+  constructor() {
+    effect(
+      () => {
+        const pages = this.pages();
+        if (pages && pages.length > 0) {
+          this.activePage.set({ ...pages[0] });
+          return pages[0];
+        }
+        return null;
+      },
+      { allowSignalWrites: true }
+    );
+  }
 
   addItem(
     addOrEditDialogRef: TemplateRef<any>,
@@ -97,31 +157,45 @@ export class AppComponent {
     const dialogRef = this.dialog.open(addOrEditDialogRef, {
       data: {
         title: `${isEdit ? "Update" : "Add New"} ${
-          this.activePage.signlerName
+          this.activePage()?.signlerName
         }`,
-        message: `Are you sure! Do you want to delete ${this.activePage.signlerName}?`,
-        formConfig: this.activePage.formConfig,
+        message: `Are you sure! Do you want to delete ${
+          this.activePage()?.signlerName
+        }?`,
+        formConfig: this.activePage()?.formConfig,
         defaultValues: defaultValues,
         yesClick: (newForm: NgForm) => {
           if (isEdit) {
-            if (newForm.valid && newForm.value.name.trim().length > 0) {
-              this.activePage.items = this.activePage.items.map((val) => {
-                if (val.id === defaultValues.id) {
-                  return { ...newForm.value, id: defaultValues.id };
-                }
-                return val;
-              });
-              newForm.resetForm({});
-              dialogRef.close();
+            if (
+              newForm.valid &&
+              newForm.value.name.trim().length > 0 &&
+              this.activePage()
+            ) {
+              const page = this.activePage();
+              if (page) {
+                page.items = page.items.map((val) => {
+                  if (val.id === defaultValues.id) {
+                    return { ...newForm.value, id: defaultValues.id };
+                  }
+                  return val;
+                });
+                this.activePage.set(page);
+                newForm.resetForm({});
+                dialogRef.close();
+              }
             }
           } else {
             if (newForm.valid && newForm.value.name.trim().length > 0) {
-              this.activePage.items.push({
-                ...newForm.value,
-                id: new Date().getTime().toString(),
-              });
-              newForm.resetForm({});
-              dialogRef.close();
+              const page = this.activePage();
+              if (page) {
+                page.items.push({
+                  ...newForm.value,
+                  id: new Date().getTime().toString(),
+                });
+                this.activePage.set(page);
+                newForm.resetForm({});
+                dialogRef.close();
+              }
             }
           }
         },
@@ -140,12 +214,16 @@ export class AppComponent {
     const dialogRef = this.dialog.open(deleteConfirmationDialogRef, {
       data: {
         title: " Delete Confirmation",
-        message: `Are you sure! Do you want to delete ${this.activePage.signlerName}?`,
+        message: `Are you sure! Do you want to delete ${
+          this.activePage()?.signlerName
+        }?`,
         yesClick: () => {
           dialogRef.close();
-          this.activePage.items = this.activePage.items.filter(
-            (_item) => item.id != _item.id
-          );
+          const page = this.activePage();
+          if (page) {
+            page.items = page.items.filter((_item) => item.id != _item.id);
+            this.activePage.set(page);
+          }
         },
       },
     });

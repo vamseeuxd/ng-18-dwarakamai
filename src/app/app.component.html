@@ -3,41 +3,41 @@
   <mat-drawer #drawer class="border shadow-sm rounded-0" mode="over" style="width: 220px" >
     <button mat-icon-button class="close-button" (click)="drawer.toggle()"> <mat-icon>close</mat-icon> </button>
     <ul class="list-group rounded-0">
-      @for(page of pages; track page.id){
-      <li matRipple (click)="activePage = page" role="button" [class.active]="activePage.id === page.id" class="list-group-item rounded-0"> {{page.name}} </li>
+      @for(page of pages(); track page.id){
+      <li matRipple (click)="activePage.set(page)" role="button" [class.active]="activePage()?.id === page.id" class="list-group-item rounded-0"> {{page.name}} </li>
       }
     </ul>
   </mat-drawer>
 
   <mat-toolbar style="background: #ffd9e1">
     <button mat-icon-button class="open-button" (click)="drawer.toggle()"> <mat-icon>menu</mat-icon> </button>
-    <h6 class="fs-6">Dwarakamai Vizag / {{activePage.name}}</h6>
+    <h6 class="fs-6">Dwarakamai Vizag / {{activePage()?.name}}</h6>
   </mat-toolbar>
 
   <div class="container-fluid">
       <ul class="list-group col-md-8 offset-md-2 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4 mt-2 position-relative">
         <li class="list-group-item p-2">
           <ul class="list-group" style="height: calc(100dvh - 120px);overflow-y: auto;overflow-x: hidden;">
-            @for(item of activePage.items; track item.id){
+            @for(item of activePage()?.items; track item.id){
               <li matRipple class="list-group-item d-flex justify-content-start align-items-center">                
                   <div class="col">
-                    <span [innerHTML]="activePage.itemLabelCallBack(item)"></span>
+                    <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span>
                   </div>
                   <div class="position-absolute top-0 end-0">
                     <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu"> <mat-icon>more_vert</mat-icon> </button>
                     <mat-menu #menu="matMenu">
-                      <button mat-menu-item (click)="deleteItem(item,deleteConfirmationDialogRef)"> <mat-icon>delete</mat-icon> <span>Delete {{activePage.signlerName}}</span> </button>
-                      <button mat-menu-item (click)="addItem(addOrEditDialogRef,$any(item), true)"> <mat-icon>edit</mat-icon> <span>Edit {{activePage.signlerName}}</span> </button>
+                      <button mat-menu-item (click)="deleteItem(item,deleteConfirmationDialogRef)"> <mat-icon>delete</mat-icon> <span>Delete {{activePage()?.signlerName}}</span> </button>
+                      <button mat-menu-item (click)="addItem(addOrEditDialogRef,$any(item), true)"> <mat-icon>edit</mat-icon> <span>Edit {{activePage()?.signlerName}}</span> </button>
                     </mat-menu>
                   </div>                
               </li>
             }@empty{
-              <h6 class="text-muted text-center my-3">No {{activePage.name}} to Show</h6>
+              <h6 class="text-muted text-center my-3">No {{activePage()?.name}} to Show</h6>
             }
           </ul>
         </li>
         <div class="d-inline-block position-absolute bottom-0 end-0" cdkDrag>
-          <button mat-fab (click)="addItem(addOrEditDialogRef,this.activePage.defaultValues)">
+          <button mat-fab (click)="addItem(addOrEditDialogRef,this.activePage()?.defaultValues || {})">
             <mat-icon>add</mat-icon>
           </button>
         </div>
@@ -65,7 +65,7 @@
                 <div class="col-md-12 py-2" style="min-width: 350px;">
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage.onFormChange(formRef, config.name)" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
+                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
                   </mat-form-field>
                 </div>
               }
@@ -73,7 +73,7 @@
                 <div class="col-md-12 py-2" style="min-width: 350px;">
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage.onFormChange(formRef, config.name)" type="number" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
+                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" type="number" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
                   </mat-form-field>
                 </div>
               }
@@ -81,7 +81,7 @@
                 <div class="col-md-12 py-2" style="min-width: 350px;">
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage.onFormChange(formRef, config.name)" type="date" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
+                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" type="date" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
                   </mat-form-field>
                 </div>
               }
@@ -89,7 +89,7 @@
                 <div class="col-md-12 py-2" style="min-width: 350px;">
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage.onFormChange(formRef, config.name)" type="month" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
+                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" type="month" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
                   </mat-form-field>
                 </div>
               }
@@ -98,7 +98,7 @@
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>{{config.label}}</mat-label>
                     <input [name]="config.name" [matAutocomplete]="auto" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
-                    <mat-autocomplete (optionSelected)="activePage.onFormChange(formRef, config.name)" autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn(config.dataProvider(formRef))">
+                    <mat-autocomplete (optionSelected)="activePage()?.onFormChange(formRef, config.name)" autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn(config.dataProvider(formRef))">
                       @for (option of config.dataProvider(formRef) | filterBy: ['name']: formRef.value[config.name] ; track option) {
                         <mat-option [value]="option.id">{{option.name}}</mat-option>
                       }
@@ -110,7 +110,7 @@
                 <div class="col-md-12 py-2" style="min-width: 350px;">
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>{{config.label}}</mat-label>
-                    <mat-select (selectionChange)="activePage.onFormChange(formRef, config.name)" [name]="config.name" multiple  [ngModel]="data.defaultValues[config.name]" [required]="config.required">
+                    <mat-select (selectionChange)="activePage()?.onFormChange(formRef, config.name)" [name]="config.name" multiple  [ngModel]="data.defaultValues[config.name]" [required]="config.required">
                       <mat-select-trigger>
                          {{(formRef.value[config.name] && getItemNameById(config.dataProvider(formRef),formRef.value[config.name][0]) || '')}}
                         @if ((formRef.value[config.name]?.length || 0) > 1) {

@@ -1,12 +1,13 @@
 import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
+import { Observable, of } from "rxjs";
 import { getPage, IInventoryItem, IItem } from "src/app/interfaces";
 
 @Injectable({
   providedIn: "root",
 })
 export class InventoryService {
-  inventory: IInventoryItem[] = [
+  inventory$: Observable<IInventoryItem[]> = of([
     {
       name: "Test",
       floor: "floor_1",
@@ -21,20 +22,20 @@ export class InventoryService {
       cost: 1000,
       id: "1722525335681",
     },
-  ];
+  ]);
 
-  inventoryItemStatus: IItem[] = [
+  inventoryItemStatus$: Observable<IItem[]> = of([
     { name: "Working", id: "Working" },
     { name: "Not Working", id: "Not Working" },
-  ];
+  ]);
 
   constructor() {}
-  getPage(floors: IItem[], inventoryItemStatus: IItem[]) {
+  getPage(floors: IItem[], inventoryItemStatus: IItem[], inventory:IInventoryItem[]) {
     return getPage(
       "Inventory Item",
       "inventory",
       "Inventory",
-      this.inventory,
+      inventory,
       [
         {
           type: "text",

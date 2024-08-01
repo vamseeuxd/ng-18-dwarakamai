@@ -1,12 +1,13 @@
 import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
+import { Observable, of } from "rxjs";
 import { getPage, IItem } from "src/app/interfaces";
 
 @Injectable({
   providedIn: "root",
 })
 export class FlatsService {
-  flats: IItem[] = [
+  flats$: Observable<IItem[]> = of([
     { name: "Flat 101", id: "flat_101" },
     { name: "Flat 102", id: "flat_102" },
     { name: "Flat 103", id: "flat_103" },
@@ -23,15 +24,14 @@ export class FlatsService {
     { name: "Flat 402", id: "flat_402" },
     { name: "Flat 403", id: "flat_403" },
     { name: "Flat 404", id: "flat_404" },
-  ];
+  ]);
 
-  constructor() {}
-  getPage() {
+  getPage(flats:IItem[]) {
     return getPage(
       "Flat",
       "flats",
       "Flats",
-      this.flats,
+      flats,
       [
         {
           type: "text",

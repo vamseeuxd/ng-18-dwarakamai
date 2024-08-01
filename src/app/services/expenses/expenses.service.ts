@@ -1,13 +1,14 @@
 import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import moment from "moment";
+import { Observable, of } from "rxjs";
 import { getPage, IExpenses, IInventoryItem, IItem } from "src/app/interfaces";
 
 @Injectable({
   providedIn: "root",
 })
 export class ExpensesService {
-  expenses: IExpenses[] = [
+  expenses$: Observable<IExpenses[]> = of([
     {
       name: "Some Repair",
       floor: "floor_1",
@@ -18,15 +19,20 @@ export class ExpensesService {
       settledDate: "2024-12-31",
       id: "1722535772976",
     },
-  ];
+  ]);
   constructor() {}
 
-  getPage(floors:IItem[], inventory:IInventoryItem[], vendors:IItem[]) {
+  getPage(
+    floors: IItem[],
+    inventory: IInventoryItem[],
+    vendors: IItem[],
+    expenses: IExpenses[]
+  ) {
     return getPage(
       "Expense",
       "expenses",
       "Expenses",
-      this.expenses,
+      expenses,
       [
         {
           type: "text",
