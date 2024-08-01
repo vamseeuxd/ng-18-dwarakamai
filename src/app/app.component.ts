@@ -9,9 +9,9 @@ import { MatRippleModule } from '@angular/material/core';
  * @title Autosize sidenav
  */
 @Component({
-  selector: 'sidenav-autosize-example',
-  templateUrl: 'sidenav-autosize-example.html',
-  styleUrl: 'sidenav-autosize-example.css',
+  selector: 'app-component',
+  templateUrl: 'app.component.html',
+  styleUrl: 'app.component.css',
   standalone: true,
   imports: [
     MatSidenavModule,
@@ -21,7 +21,7 @@ import { MatRippleModule } from '@angular/material/core';
     MatRippleModule,
   ],
 })
-export class SidenavAutosizeExample {
+export class AppComponent {
   pages = [
     { id: 'flats', name: 'Flats' },
     { id: 'expenses', name: 'Expenses' },

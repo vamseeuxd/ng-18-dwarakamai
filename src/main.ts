@@ -8,13 +8,13 @@ import {
   VERSION as MAT_VERSION,
   MatNativeDateModule,
 } from '@angular/material/core';
-import { SidenavAutosizeExample } from './sidenav/sidenav-autosize-example';
+import { AppComponent } from './app/app.component';
 
 /* eslint-disable no-console */
 console.info('Angular CDK version', CDK_VERSION.full);
 console.info('Angular Material version', MAT_VERSION.full);
 
-bootstrapApplication(SidenavAutosizeExample, {
+bootstrapApplication(AppComponent, {
   providers: [
     provideAnimations(),
     provideHttpClient(),
