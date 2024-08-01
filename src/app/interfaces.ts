@@ -80,3 +80,7 @@ export const getPage = (
     onFormChange,
   };
 };
+
+export const getItemNameById = (items: IItem[], id: string) => {
+  return items.find((i) => i.id === id)?.name || "";
+};
