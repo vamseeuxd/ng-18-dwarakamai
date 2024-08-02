@@ -139,7 +139,10 @@
     </mat-dialog-content>
     <mat-dialog-actions>
       <button mat-button cdkFocusInitial mat-dialog-close>Cancel</button>
-      <button mat-button [disabled]="formRef.invalid" (click)="data.yesClick(formRef)">Save</button>
+      <button mat-button [disabled]="formRef.invalid" (click)="data.yesClick(formRef, false)">Save</button>
+      @if (!data.isEdit) {
+        <button mat-button cdkFocusInitial (click)="data.yesClick(formRef, true)">Save & Add New</button>
+      }
     </mat-dialog-actions>
   </ng-template>
   

@@ -47,12 +47,6 @@ export class FloorsService {
   }
 
   getPage(floors: IItem[]) {
-    const db = {
-      add: this.add.bind(this),
-      update: this.update.bind(this),
-      remove: this.remove.bind(this),
-      get: this.get.bind(this),
-    };
     return getPage(
       "Floor",
       "floors",
@@ -74,7 +68,12 @@ export class FloorsService {
         return item.name;
       },
       (form: NgForm, valueChanged: string): void => {},
-      db
+      {
+        add: this.add.bind(this),
+        update: this.update.bind(this),
+        remove: this.remove.bind(this),
+        get: this.get.bind(this),
+      }
     );
   }
 }

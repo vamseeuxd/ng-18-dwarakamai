@@ -131,7 +131,7 @@ export class AppComponent {
       () => {
         const pages = this.pages();
         if (pages && pages.length > 0) {
-          this.activePage.set({ ...pages[1] });
+          this.activePage.set({ ...pages[0] });
         }
       },
       { allowSignalWrites: true }
@@ -164,9 +164,10 @@ export class AppComponent {
         message: `Are you sure! Do you want to delete ${
           this.activePage()?.signlerName
         }?`,
+        isEdit: isEdit,
         formConfig: this.activePage()?.formConfig,
         defaultValues: defaultValues,
-        yesClick: async (newForm: NgForm) => {
+        yesClick: async (newForm: NgForm, addNew = true) => {
           if (isEdit) {
             if (
               newForm.valid &&
@@ -186,7 +187,9 @@ export class AppComponent {
               if (page) {
                 await page.db?.add(newForm.value);
                 newForm.resetForm({});
-                dialogRef.close();
+                if (!addNew) {
+                  dialogRef.close();
+                }
               }
             }
           }

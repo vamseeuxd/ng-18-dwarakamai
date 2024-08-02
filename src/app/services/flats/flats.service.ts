@@ -1,4 +1,19 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import {
+  Firestore,
+  CollectionReference,
+  collection,
+  collectionData,
+  DocumentData,
+  addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  getDoc,
+  Query,
+  query,
+  orderBy,
+} from "@angular/fire/firestore";
 import { NgForm } from "@angular/forms";
 import { Observable, of } from "rxjs";
 import { getPage, IItem } from "src/app/interfaces";
@@ -7,26 +22,34 @@ import { getPage, IItem } from "src/app/interfaces";
   providedIn: "root",
 })
 export class FlatsService {
-  flats$: Observable<IItem[]> = of([
-    { name: "Flat 101", id: "flat_101" },
-    { name: "Flat 102", id: "flat_102" },
-    { name: "Flat 103", id: "flat_103" },
-    { name: "Flat 104", id: "flat_104" },
-    { name: "Flat 201", id: "flat_201" },
-    { name: "Flat 202", id: "flat_202" },
-    { name: "Flat 203", id: "flat_203" },
-    { name: "Flat 204", id: "flat_204" },
-    { name: "Flat 301", id: "flat_301" },
-    { name: "Flat 302", id: "flat_302" },
-    { name: "Flat 303", id: "flat_303" },
-    { name: "Flat 304", id: "flat_304" },
-    { name: "Flat 401", id: "flat_401" },
-    { name: "Flat 402", id: "flat_402" },
-    { name: "Flat 403", id: "flat_403" },
-    { name: "Flat 404", id: "flat_404" },
-  ]);
+  firestore: Firestore = inject(Firestore);
+  collection: CollectionReference = collection(this.firestore, "flats");
+  queryRef = query(this.collection, orderBy("name"));
+  // prettier-ignore
+  flats$: Observable<IItem[]> = collectionData<IItem>( this.queryRef as Query<IItem, DocumentData>, { idField: "id" } );
 
-  getPage(flats:IItem[]) {
+  async add(floor: IItem) {
+    delete floor.id;
+    await addDoc(this.collection, floor);
+  }
+
+  async update(floor: IItem, id: string) {
+    delete floor.id;
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await updateDoc(docRef, { ...floor });
+  }
+
+  async remove(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await deleteDoc(docRef);
+  }
+
+  async get(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await getDoc(docRef);
+  }
+
+  getPage(flats: IItem[]) {
     return getPage(
       "Flat",
       "flats",
@@ -45,7 +68,13 @@ export class FlatsService {
       ],
       { name: "" },
       (item) => item.name,
-      (form: NgForm, valueChanged: string): void => {}
+      (form: NgForm, valueChanged: string): void => {},
+      {
+        add: this.add.bind(this),
+        update: this.update.bind(this),
+        remove: this.remove.bind(this),
+        get: this.get.bind(this),
+      }
     );
   }
 }
