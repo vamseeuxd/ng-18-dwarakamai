@@ -1,4 +1,5 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import { Firestore, CollectionReference, collection, orderBy, collectionData, DocumentData, addDoc, doc, updateDoc, deleteDoc, getDoc, query, Query } from "@angular/fire/firestore";
 import { NgForm } from "@angular/forms";
 import { Observable, of } from "rxjs";
 import { getPage, IItem, IVehicle } from "src/app/interfaces";
@@ -7,21 +8,37 @@ import { getPage, IItem, IVehicle } from "src/app/interfaces";
   providedIn: "root",
 })
 export class VehiclesService {
+  firestore: Firestore = inject(Firestore);
+  collection: CollectionReference = collection(this.firestore, "vehicles");
+  queryRef = query(this.collection, orderBy("name"));
+  // prettier-ignore
+  vehicles$: Observable<IVehicle[]> = collectionData<IVehicle>( this.queryRef as Query<IVehicle, DocumentData>, { idField: "id" } );
+
+  async add(value: IVehicle) {
+    delete value.id;
+    await addDoc(this.collection, value);
+  }
+
+  async update(value: IVehicle, id: string) {
+    delete value.id;
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await updateDoc(docRef, { ...value });
+  }
+
+  async remove(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await deleteDoc(docRef);
+  }
+
+  async get(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await getDoc(docRef);
+  }
   vehicleTypes$: Observable<IItem[]> = of([
     { name: "Two Wheeler", id: "Two Wheeler" },
     { name: "Four Wheeler", id: "Four Wheeler" },
   ]);
 
-  vehicles$: Observable<IVehicle[]> = of([
-    {
-      name: "AP-39M-4797",
-      color: "gray",
-      make: "Maruti Celerio",
-      flat: "flat_404",
-      type: "Four Wheeler",
-      id: "Test - 01",
-    },
-  ]);
   constructor() {}
   getPage(flats: IItem[], vehicles: IVehicle[], vehicleTypes: IItem[]) {
     return getPage(
@@ -91,7 +108,13 @@ export class VehiclesService {
         <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ flats.find((f) => f.id == item.flat)?.name }</div>
         <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ vehicleTypes.find((v) => v.id == item.type)?.name }</div>`;
       },
-      (form: NgForm, valueChanged: string): void => {}
+      (form: NgForm, valueChanged: string): void => {},
+      {
+        add: this.add.bind(this),
+        update: this.update.bind(this),
+        remove: this.remove.bind(this),
+        get: this.get.bind(this),
+      }
     );
   }
 }
