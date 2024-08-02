@@ -1,11 +1,9 @@
 import {
   Component,
-  computed,
   effect,
   inject,
   signal,
   TemplateRef,
-  viewChild,
   WritableSignal,
 } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
@@ -29,18 +27,7 @@ import {
   MatDialogContent,
   MatDialogTitle,
 } from "@angular/material/dialog";
-import {
-  IItem,
-  IVehicle,
-  IIncome,
-  IInventoryItem,
-  IPage,
-  IDefaultValues,
-  getPage,
-  IExpenses,
-  getItemNameById,
-} from "./interfaces";
-import moment from "moment";
+import { IItem, IPage, IDefaultValues, getItemNameById } from "./interfaces";
 import { FlatsService } from "./services/flats/flats.service";
 import { FloorsService } from "./services/floors/floors.service";
 import { VendorsService } from "./services/vendors/vendors.service";
@@ -50,13 +37,15 @@ import { VehiclesService } from "./services/Vehicles/vehicles.service";
 import { IncomeService } from "./services/income/income.service";
 import { toSignal } from "@angular/core/rxjs-interop";
 import {
-  BehaviorSubject,
-  combineLatest,
-  map,
-  Observable,
-  Subject,
-  tap,
-} from "rxjs";
+  Auth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  User,
+  user,
+  UserCredential,
+} from "@angular/fire/auth";
+import { combineLatest, map, Observable } from "rxjs";
 
 @Component({
   selector: "app-component",
@@ -86,6 +75,7 @@ import {
   ],
 })
 export class AppComponent {
+  auth: Auth = inject(Auth);
   readonly dialog = inject(MatDialog);
   readonly flatsService = inject(FlatsService);
   readonly floorsService = inject(FloorsService);
@@ -133,6 +123,7 @@ export class AppComponent {
   );
 
   pages = toSignal<IPage[]>(this.pages$);
+  userDetails = toSignal<User | null>(user(this.auth));
   activePage: WritableSignal<IPage | null> = signal<IPage | null>(null);
 
   constructor() {
@@ -140,13 +131,24 @@ export class AppComponent {
       () => {
         const pages = this.pages();
         if (pages && pages.length > 0) {
-          this.activePage.set({ ...pages[0] });
-          return pages[0];
+          this.activePage.set({ ...pages[1] });
         }
-        return null;
       },
       { allowSignalWrites: true }
     );
+  }
+
+  async loginByGoogle() {
+    const userCredential: UserCredential = await signInWithPopup(
+      this.auth,
+      new GoogleAuthProvider()
+    );
+    // console.log(userCredential);
+    console.log(this.userDetails);
+  }
+
+  async logout() {
+    await signOut(this.auth);
   }
 
   addItem(
@@ -164,7 +166,7 @@ export class AppComponent {
         }?`,
         formConfig: this.activePage()?.formConfig,
         defaultValues: defaultValues,
-        yesClick: (newForm: NgForm) => {
+        yesClick: async (newForm: NgForm) => {
           if (isEdit) {
             if (
               newForm.valid &&
@@ -173,13 +175,7 @@ export class AppComponent {
             ) {
               const page = this.activePage();
               if (page) {
-                page.items = page.items.map((val) => {
-                  if (val.id === defaultValues.id) {
-                    return { ...newForm.value, id: defaultValues.id };
-                  }
-                  return val;
-                });
-                this.activePage.set(page);
+                page.db?.update(newForm.value, defaultValues.id as string);
                 newForm.resetForm({});
                 dialogRef.close();
               }
@@ -188,11 +184,7 @@ export class AppComponent {
             if (newForm.valid && newForm.value.name.trim().length > 0) {
               const page = this.activePage();
               if (page) {
-                page.items.push({
-                  ...newForm.value,
-                  id: new Date().getTime().toString(),
-                });
-                this.activePage.set(page);
+                await page.db?.add(newForm.value);
                 newForm.resetForm({});
                 dialogRef.close();
               }
@@ -221,8 +213,7 @@ export class AppComponent {
           dialogRef.close();
           const page = this.activePage();
           if (page) {
-            page.items = page.items.filter((_item) => item.id != _item.id);
-            this.activePage.set(page);
+            page.db?.remove(item.id as string);
           }
         },
       },

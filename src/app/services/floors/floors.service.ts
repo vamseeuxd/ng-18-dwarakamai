@@ -1,4 +1,17 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import {
+  CollectionReference,
+  DocumentData,
+  Firestore,
+  Query,
+  addDoc,
+  collection,
+  collectionData,
+  deleteDoc,
+  doc,
+  getDoc,
+  updateDoc,
+} from "@angular/fire/firestore";
 import { NgForm } from "@angular/forms";
 import { Observable, of } from "rxjs";
 import { getPage, IItem } from "src/app/interfaces";
@@ -7,15 +20,39 @@ import { getPage, IItem } from "src/app/interfaces";
   providedIn: "root",
 })
 export class FloorsService {
-  floors$: Observable<IItem[]> = of([
-    { name: "Floor 1", id: "floor_1" },
-    { name: "Floor 2", id: "floor_2" },
-    { name: "Floor 3", id: "floor_3" },
-    { name: "Floor 4", id: "floor_4" },
-    { name: "Ground Floor", id: "Ground Floor" },
-    { name: "Building", id: "Building" },
-  ]);
-  getPage(floors:IItem[]) {
+  firestore: Firestore = inject(Firestore);
+  collection: CollectionReference = collection(this.firestore, "floors");
+  // prettier-ignore
+  floors$: Observable<IItem[]> = collectionData<IItem>( this.collection as Query<IItem, DocumentData>, { idField: "id" } );
+
+  async add(floor: IItem) {
+    delete floor.id;
+    await addDoc(this.collection, floor);
+  }
+
+  async update(floor: IItem, id: string) {
+    delete floor.id;
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await updateDoc(docRef, { ...floor });
+  }
+
+  async remove(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await deleteDoc(docRef);
+  }
+
+  async get(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await getDoc(docRef);
+  }
+
+  getPage(floors: IItem[]) {
+    const db = {
+      add: this.add.bind(this),
+      update: this.update.bind(this),
+      remove: this.remove.bind(this),
+      get: this.get.bind(this),
+    };
     return getPage(
       "Floor",
       "floors",
@@ -36,7 +73,8 @@ export class FloorsService {
       (item: IItem): string => {
         return item.name;
       },
-      (form: NgForm, valueChanged: string): void => {}
+      (form: NgForm, valueChanged: string): void => {},
+      db
     );
   }
 }

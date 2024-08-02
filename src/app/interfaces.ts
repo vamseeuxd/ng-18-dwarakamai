@@ -1,7 +1,7 @@
 import { NgForm } from "@angular/forms";
 
 export interface IItem {
-  id: string;
+  id?: string;
   name: string;
 }
 
@@ -47,6 +47,12 @@ export interface IPage {
   formConfig: IFormConfig[];
   onFormChange: (form: NgForm, valueChanged: string) => void;
   defaultValues: IDefaultValues;
+  db?: {
+    add: (floor: IItem) => Promise<void>;
+    update: (floor: IItem, id: string) => Promise<void>;
+    remove: (id: string) => Promise<void>;
+    get: (id: string) => Promise<any>;
+  };
 }
 
 export interface IFormConfig {
@@ -67,7 +73,13 @@ export const getPage = (
   formConfig: IFormConfig[],
   defaultValues: IDefaultValues,
   itemLabelCallBack: (item: any) => string,
-  onFormChange: (form: NgForm, valueChanged: string) => void
+  onFormChange: (form: NgForm, valueChanged: string) => void,
+  db?: {
+    add: (floor: IItem) => Promise<void>;
+    update: (floor: IItem, id: string) => Promise<void>;
+    remove: (id: string) => Promise<void>;
+    get: (id: string) => Promise<any>;
+  }
 ): IPage => {
   return {
     signlerName,
@@ -78,6 +90,7 @@ export const getPage = (
     defaultValues,
     itemLabelCallBack,
     onFormChange,
+    db
   };
 };
 

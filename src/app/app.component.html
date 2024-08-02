@@ -12,6 +12,12 @@
   <mat-toolbar style="background: #ffd9e1">
     <button mat-icon-button class="open-button" (click)="drawer.toggle()"> <mat-icon>menu</mat-icon> </button>
     <h6 class="fs-6">Dwarakamai Vizag / {{activePage()?.name}}</h6>
+    <div class="ms-auto"></div>
+    @if(userDetails()){
+      <button mat-icon-button class="open-button" (click)="logout()"> <mat-icon>logout</mat-icon> </button>
+    }@else {
+      <button mat-icon-button class="open-button" (click)="loginByGoogle()"> <mat-icon>login</mat-icon> </button>
+    }
   </mat-toolbar>
 
   <div class="container-fluid">
