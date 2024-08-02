@@ -131,7 +131,22 @@ export class AppComponent {
       () => {
         const pages = this.pages();
         if (pages && pages.length > 0) {
-          this.activePage.set({ ...pages[0] });
+          const activePage =
+            pages.find((p) => p.id == localStorage.getItem("activePageId")) ||
+            pages[0];
+          if (activePage) {
+            this.activePage.set({ ...activePage });
+            localStorage.setItem("activePageId", activePage.id);
+          }
+        }
+      },
+      { allowSignalWrites: true }
+    );
+    effect(
+      () => {
+        const page = this.activePage();
+        if (page) {
+          localStorage.setItem("activePageId", page.id);
         }
       },
       { allowSignalWrites: true }
@@ -143,8 +158,6 @@ export class AppComponent {
       this.auth,
       new GoogleAuthProvider()
     );
-    // console.log(userCredential);
-    console.log(this.userDetails);
   }
 
   async logout() {
