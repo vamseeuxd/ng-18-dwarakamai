@@ -1,4 +1,5 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import { Firestore, CollectionReference, collection, orderBy, collectionData, DocumentData, addDoc, doc, updateDoc, deleteDoc, getDoc, query, Query } from "@angular/fire/firestore";
 import { NgForm } from "@angular/forms";
 import moment from "moment";
 import { Observable, of } from "rxjs";
@@ -8,18 +9,33 @@ import { getPage, IExpenses, IInventoryItem, IItem } from "src/app/interfaces";
   providedIn: "root",
 })
 export class ExpensesService {
-  expenses$: Observable<IExpenses[]> = of([
-    {
-      name: "Some Repair",
-      floor: "floor_1",
-      inventoryItem: "1722525320025",
-      amount: 5000,
-      vendor: "vendor_1",
-      startDate: "2024-12-01",
-      settledDate: "2024-12-31",
-      id: "1722535772976",
-    },
-  ]);
+  firestore: Firestore = inject(Firestore);
+  collection: CollectionReference = collection(this.firestore, "expenses");
+  queryRef = query(this.collection, orderBy("name"));
+  // prettier-ignore
+  expenses$: Observable<IExpenses[]> = collectionData<IExpenses>( this.queryRef as Query<IExpenses, DocumentData>, { idField: "id" } );
+
+  async add(value: IExpenses) {
+    delete value.id;
+    await addDoc(this.collection, value);
+  }
+
+  async update(value: IExpenses, id: string) {
+    delete value.id;
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await updateDoc(docRef, { ...value });
+  }
+
+  async remove(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await deleteDoc(docRef);
+  }
+
+  async get(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await getDoc(docRef);
+  }
+  
   constructor() {}
 
   getPage(
@@ -122,6 +138,12 @@ export class ExpensesService {
         if (valueChanged === "floor") {
           form.controls.inventoryItem.setValue("");
         }
+      },
+      {
+        add: this.add.bind(this),
+        update: this.update.bind(this),
+        remove: this.remove.bind(this),
+        get: this.get.bind(this),
       }
     );
   }

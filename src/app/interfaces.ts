@@ -75,8 +75,8 @@ export const getPage = (
   itemLabelCallBack: (item: any) => string,
   onFormChange: (form: NgForm, valueChanged: string) => void,
   db?: {
-    add: (floor: IItem) => Promise<void>;
-    update: (floor: IItem, id: string) => Promise<void>;
+    add: (value: any) => Promise<void>;
+    update: (value: any, id: string) => Promise<void>;
     remove: (id: string) => Promise<void>;
     get: (id: string) => Promise<any>;
   }

@@ -1,4 +1,19 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import {
+  Firestore,
+  CollectionReference,
+  collection,
+  orderBy,
+  collectionData,
+  DocumentData,
+  addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  getDoc,
+  query,
+  Query,
+} from "@angular/fire/firestore";
 import { NgForm } from "@angular/forms";
 import { Observable, of } from "rxjs";
 import { getPage, IInventoryItem, IItem } from "src/app/interfaces";
@@ -7,22 +22,32 @@ import { getPage, IInventoryItem, IItem } from "src/app/interfaces";
   providedIn: "root",
 })
 export class InventoryService {
-  inventory$: Observable<IInventoryItem[]> = of([
-    {
-      name: "Test",
-      floor: "floor_1",
-      status: "Working",
-      cost: 5000,
-      id: "1722525320025",
-    },
-    {
-      name: "Test - 2",
-      floor: "floor_2",
-      status: "Working",
-      cost: 1000,
-      id: "1722525335681",
-    },
-  ]);
+  firestore: Firestore = inject(Firestore);
+  collection: CollectionReference = collection(this.firestore, "inventoryItem");
+  queryRef = query(this.collection, orderBy("name"));
+  // prettier-ignore
+  inventory$: Observable<IInventoryItem[]> = collectionData<IInventoryItem>( this.queryRef as Query<IInventoryItem, DocumentData>, { idField: "id" } );
+
+  async add(value: IInventoryItem) {
+    delete value.id;
+    await addDoc(this.collection, value);
+  }
+
+  async update(value: IInventoryItem, id: string) {
+    delete value.id;
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await updateDoc(docRef, { ...value });
+  }
+
+  async remove(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await deleteDoc(docRef);
+  }
+
+  async get(id: string) {
+    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
+    await getDoc(docRef);
+  }
 
   inventoryItemStatus$: Observable<IItem[]> = of([
     { name: "Working", id: "Working" },
@@ -30,7 +55,11 @@ export class InventoryService {
   ]);
 
   constructor() {}
-  getPage(floors: IItem[], inventoryItemStatus: IItem[], inventory:IInventoryItem[]) {
+  getPage(
+    floors: IItem[],
+    inventoryItemStatus: IItem[],
+    inventory: IInventoryItem[]
+  ) {
     return getPage(
       "Inventory Item",
       "inventory",
@@ -87,7 +116,13 @@ export class InventoryService {
         <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${ inventoryItemStatus.find((f) => f.id == item.status)?.name }</div>
         <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${new Intl.NumberFormat( "en-IN" ).format(item.cost || 0)} ₹</div>`;
       },
-      (form: NgForm, valueChanged: string): void => {}
+      (form: NgForm, valueChanged: string): void => {},
+      {
+        add: this.add.bind(this),
+        update: this.update.bind(this),
+        remove: this.remove.bind(this),
+        get: this.get.bind(this),
+      }
     );
   }
 }
