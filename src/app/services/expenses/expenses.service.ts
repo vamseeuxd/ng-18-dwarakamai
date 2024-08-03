@@ -1,42 +1,34 @@
-import { inject, Injectable } from "@angular/core";
-import { Firestore, CollectionReference, collection, orderBy, collectionData, DocumentData, addDoc, doc, updateDoc, deleteDoc, getDoc, query, Query } from "@angular/fire/firestore";
+import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import moment from "moment";
-import { Observable, of } from "rxjs";
 import { getPage, IExpenses, IInventoryItem, IItem } from "src/app/interfaces";
+import { FirestoreBase } from "../firestore-base";
+import moment from "moment";
+
+// constants.ts
+export const COLLECTION_NAME = "expenses";
+export const ID_FIELD: keyof IItem = "id";
+export const ORDER_BY_FIELD: keyof IItem = "name";
+export const ENTITY_NAME = "Expense";
+export const ENTITY_PLURAL_NAME = "Expenses";
+export const INITIAL_FORM_VALUES = {
+  name: "",
+  floor: "",
+  inventoryItem: "",
+  amount: "",
+  vendor: "",
+};
 
 @Injectable({
   providedIn: "root",
 })
-export class ExpensesService {
-  firestore: Firestore = inject(Firestore);
-  collection: CollectionReference = collection(this.firestore, "expenses");
-  queryRef = query(this.collection, orderBy("name"));
-  // prettier-ignore
-  expenses$: Observable<IExpenses[]> = collectionData<IExpenses>( this.queryRef as Query<IExpenses, DocumentData>, { idField: "id" } );
-
-  async add(value: IExpenses) {
-    delete value.id;
-    await addDoc(this.collection, value);
+export class ExpensesService extends FirestoreBase<IExpenses> {
+  constructor() {
+    super({
+      collectionName: COLLECTION_NAME,
+      orderByField: ORDER_BY_FIELD,
+      idField: ID_FIELD,
+    });
   }
-
-  async update(value: IExpenses, id: string) {
-    delete value.id;
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await updateDoc(docRef, { ...value });
-  }
-
-  async remove(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await deleteDoc(docRef);
-  }
-
-  async get(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await getDoc(docRef);
-  }
-  
-  constructor() {}
 
   getPage(
     floors: IItem[],
@@ -45,9 +37,9 @@ export class ExpensesService {
     expenses: IExpenses[]
   ) {
     return getPage(
-      "Expense",
-      "expenses",
-      "Expenses",
+      ENTITY_NAME,
+      COLLECTION_NAME,
+      ENTITY_PLURAL_NAME,
       expenses,
       [
         {
@@ -116,13 +108,7 @@ export class ExpensesService {
           required: true,
         },
       ],
-      {
-        name: "",
-        floor: "",
-        inventoryItem: "",
-        amount: "",
-        vendor: "",
-      },
+      INITIAL_FORM_VALUES,
       (item: IExpenses): string => {
         /* prettier-ignore */
         return `<h6 class="mb-2 pb-3 border-bottom">${item.name}</h6>

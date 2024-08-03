@@ -1,83 +1,48 @@
-import { inject, Injectable } from "@angular/core";
-import { Observable, of } from "rxjs";
-import { getPage, IItem } from "../interfaces";
-import {
-  Firestore,
-  CollectionReference,
-  collection,
-  orderBy,
-  collectionData,
-  DocumentData,
-  addDoc,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  query,
-  Query,
-} from "@angular/fire/firestore";
+import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
+import { getPage, IFormConfig, IItem } from "src/app/interfaces";
+import { FirestoreBase } from "../services/firestore-base";
+
+// constants.ts
+export const COLLECTION_NAME = "inventoryItemStatuses";
+export const ID_FIELD: keyof IItem = "id";
+export const ORDER_BY_FIELD: keyof IItem = "name";
+export const ENTITY_NAME = "Inventory Item Status";
+export const ENTITY_PLURAL_NAME = "Inventory Item Statuses";
+export const FORM_FIELDS: IFormConfig[] = [
+  {
+    type: "text",
+    id: "name",
+    name: "name",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "New Status",
+    required: true,
+  },
+];
+export const INITIAL_FORM_VALUES = { name: "" };
 
 @Injectable({
   providedIn: "root",
 })
-export class InventoryStatusService {
-  firestore: Firestore = inject(Firestore);
-  collection: CollectionReference = collection(
-    this.firestore,
-    "inventoryItemStatuses"
-  );
-  queryRef = query(this.collection, orderBy("name"));
-  // prettier-ignore
-  inventoryItemStatus$: Observable<IItem[]> = collectionData<IItem>( this.queryRef as Query<IItem, DocumentData>, { idField: "id" } );
-
-  async add(floor: IItem) {
-    delete floor.id;
-    await addDoc(this.collection, floor);
+export class InventoryStatusService extends FirestoreBase<IItem> {
+  constructor() {
+    super({
+      collectionName: COLLECTION_NAME,
+      orderByField: ORDER_BY_FIELD,
+      idField: ID_FIELD,
+    });
   }
-
-  async update(floor: IItem, id: string) {
-    delete floor.id;
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await updateDoc(docRef, { ...floor });
-  }
-
-  async remove(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await deleteDoc(docRef);
-  }
-
-  async get(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await getDoc(docRef);
-  }
-  oldinventoryItemStatus$: Observable<IItem[]> = of([
-    { name: "Working", id: "Working" },
-    { name: "Not Working", id: "Not Working" },
-  ]);
-  constructor() {}
 
   getPage(inventoryItemStatus: IItem[]) {
     return getPage(
-      "Inventory Item Status",
-      "inventoryItemStatuses",
-      "Inventory Item Statuses",
+      ENTITY_NAME,
+      COLLECTION_NAME,
+      ENTITY_PLURAL_NAME,
       inventoryItemStatus,
-      [
-        {
-          type: "text",
-          id: "name",
-          name: "name",
-          defaultValue: "",
-          dataProvider: () => [],
-          label: "New Status",
-          required: false,
-        },
-      ],
-      { name: "" },
-      (item: IItem): string => {
-        return item.name;
-      },
+      FORM_FIELDS,
+      INITIAL_FORM_VALUES,
+      (item) => item.name,
       (form: NgForm, valueChanged: string): void => {},
       {
         add: this.add.bind(this),

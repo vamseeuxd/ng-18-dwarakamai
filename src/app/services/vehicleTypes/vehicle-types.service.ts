@@ -4,11 +4,11 @@ import { getPage, IFormConfig, IItem } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 
 // constants.ts
-export const COLLECTION_NAME = "vendors";
+export const COLLECTION_NAME = "vehicleTypes";
 export const ID_FIELD: keyof IItem = "id";
 export const ORDER_BY_FIELD: keyof IItem = "name";
-export const ENTITY_NAME = "Vendor";
-export const ENTITY_PLURAL_NAME = "Vendors";
+export const ENTITY_NAME = "Vehicle Type";
+export const ENTITY_PLURAL_NAME = "Vehicle Types";
 export const FORM_FIELDS: IFormConfig[] = [
   {
     type: "text",
@@ -16,7 +16,7 @@ export const FORM_FIELDS: IFormConfig[] = [
     name: "name",
     defaultValue: "",
     dataProvider: () => [],
-    label: "New Vendor Name",
+    label: "Vehicle Type",
     required: true,
   },
 ];
@@ -25,7 +25,7 @@ export const INITIAL_FORM_VALUES = { name: "" };
 @Injectable({
   providedIn: "root",
 })
-export class VendorsService extends FirestoreBase<IItem> {
+export class VehicleTypesService extends FirestoreBase<IItem> {
   constructor() {
     super({
       collectionName: COLLECTION_NAME,
@@ -34,12 +34,12 @@ export class VendorsService extends FirestoreBase<IItem> {
     });
   }
 
-  getPage(vendors: IItem[]) {
+  getPage(vehicleTypes: IItem[]) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
       ENTITY_PLURAL_NAME,
-      vendors,
+      vehicleTypes,
       FORM_FIELDS,
       INITIAL_FORM_VALUES,
       (item) => item.name,

@@ -1,85 +1,56 @@
-import { inject, Injectable } from "@angular/core";
-import {
-  Firestore,
-  CollectionReference,
-  collection,
-  orderBy,
-  collectionData,
-  DocumentData,
-  addDoc,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  query,
-  Query,
-} from "@angular/fire/firestore";
+import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { Observable, of } from "rxjs";
-import { getItemNameById, getPage, IIncome, IItem } from "src/app/interfaces";
+import {
+  getItemNameById,
+  getPage,
+  IFormConfig,
+  IIncome,
+  IItem,
+} from "src/app/interfaces";
+import { FirestoreBase } from "../firestore-base";
+
+// constants.ts
+export const COLLECTION_NAME = "income";
+export const ID_FIELD: keyof IItem = "id";
+export const ORDER_BY_FIELD: keyof IItem = "name";
+export const ENTITY_NAME = "Income";
+export const ENTITY_PLURAL_NAME = "Income";
+export const FORM_FIELDS: IFormConfig[] = [
+  {
+    type: "text",
+    id: "name",
+    name: "name",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "New Flat Name",
+    required: true,
+  },
+];
+export const INITIAL_FORM_VALUES = {
+  name: "",
+  id: "",
+  month: "",
+  flats: [],
+  amount: 0,
+};
 
 @Injectable({
   providedIn: "root",
 })
-export class IncomeService {
-  firestore: Firestore = inject(Firestore);
-  collection: CollectionReference = collection(this.firestore, "income");
-  queryRef = query(this.collection, orderBy("name"));
-  // prettier-ignore
-  incomes$: Observable<IIncome[]> = collectionData<IIncome>( this.queryRef as Query<IIncome, DocumentData>, { idField: "id" } );
-
-  async add(value: IIncome) {
-    delete value.id;
-    await addDoc(this.collection, value);
+export class IncomeService extends FirestoreBase<IIncome> {
+  constructor() {
+    super({
+      collectionName: COLLECTION_NAME,
+      orderByField: ORDER_BY_FIELD,
+      idField: ID_FIELD,
+    });
   }
 
-  async update(value: IIncome, id: string) {
-    delete value.id;
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await updateDoc(docRef, { ...value });
-  }
-
-  async remove(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await deleteDoc(docRef);
-  }
-
-  async get(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await getDoc(docRef);
-  }
-  oldincomes$: Observable<IIncome[]> = of([
-    {
-      id: "December 2024 Montly Maintainence",
-      name: "December 2024 Montly Maintainence",
-      month: "2024-12",
-      flats: [
-        "flat_101",
-        "flat_102",
-        "flat_103",
-        "flat_104",
-        "flat_201",
-        "flat_202",
-        "flat_203",
-        "flat_204",
-        "flat_301",
-        "flat_302",
-        "flat_303",
-        "flat_304",
-        "flat_401",
-        "flat_402",
-        "flat_403",
-        "flat_404",
-      ],
-      amount: 1500,
-    },
-  ]);
-  constructor() {}
   getPage(flats: IItem[], incomes: IIncome[]) {
     return getPage(
-      "Income",
-      "income",
-      "Income",
+      ENTITY_NAME,
+      COLLECTION_NAME,
+      ENTITY_PLURAL_NAME,
       incomes,
       [
         {
@@ -119,13 +90,7 @@ export class IncomeService {
           required: true,
         },
       ],
-      {
-        name: "",
-        id: "",
-        month: "",
-        flats: [],
-        amount: 0,
-      },
+      INITIAL_FORM_VALUES,
       (item: IIncome): string => {
         /* prettier-ignore */
         return `<h6 class="mb-2 pb-3 border-bottom">${item.name}</h6>

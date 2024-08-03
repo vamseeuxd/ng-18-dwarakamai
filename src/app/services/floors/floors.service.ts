@@ -1,72 +1,48 @@
-import { inject, Injectable } from "@angular/core";
-import {
-  CollectionReference,
-  DocumentData,
-  Firestore,
-  Query,
-  addDoc,
-  collection,
-  collectionData,
-  deleteDoc,
-  doc,
-  getDoc,
-  updateDoc,
-} from "@angular/fire/firestore";
+import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { Observable, of } from "rxjs";
-import { getPage, IItem } from "src/app/interfaces";
+import { getPage, IFormConfig, IItem } from "src/app/interfaces";
+import { FirestoreBase } from "../firestore-base";
+
+// constants.ts
+export const COLLECTION_NAME = "floors";
+export const ID_FIELD: keyof IItem = "id";
+export const ORDER_BY_FIELD: keyof IItem = "name";
+export const ENTITY_NAME = "Floor";
+export const ENTITY_PLURAL_NAME = "Floors";
+export const FORM_FIELDS: IFormConfig[] = [
+  {
+    type: "text",
+    id: "name",
+    name: "name",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "New Floor Name",
+    required: true,
+  },
+];
+export const INITIAL_FORM_VALUES = { name: "" };
 
 @Injectable({
   providedIn: "root",
 })
-export class FloorsService {
-  firestore: Firestore = inject(Firestore);
-  collection: CollectionReference = collection(this.firestore, "floors");
-  // prettier-ignore
-  floors$: Observable<IItem[]> = collectionData<IItem>( this.collection as Query<IItem, DocumentData>, { idField: "id" } );
-
-  async add(floor: IItem) {
-    delete floor.id;
-    await addDoc(this.collection, floor);
-  }
-
-  async update(floor: IItem, id: string) {
-    delete floor.id;
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await updateDoc(docRef, { ...floor });
-  }
-
-  async remove(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await deleteDoc(docRef);
-  }
-
-  async get(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await getDoc(docRef);
+export class FloorsService extends FirestoreBase<IItem> {
+  constructor() {
+    super({
+      collectionName: COLLECTION_NAME,
+      orderByField: ORDER_BY_FIELD,
+      idField: ID_FIELD,
+    });
   }
 
   getPage(floors: IItem[]) {
     return getPage(
-      "Floor",
-      "floors",
-      "Floors",
+      ENTITY_NAME,
+      COLLECTION_NAME,
+      ENTITY_PLURAL_NAME,
       floors,
-      [
-        {
-          type: "text",
-          id: "name",
-          name: "name",
-          defaultValue: "",
-          dataProvider: () => [],
-          label: "New Floor Name",
-          required: false,
-        },
-      ],
-      { name: "" },
-      (item: IItem): string => {
-        return item.name;
-      },
+      FORM_FIELDS,
+      INITIAL_FORM_VALUES,
+      (item) => item.name,
       (form: NgForm, valueChanged: string): void => {},
       {
         add: this.add.bind(this),

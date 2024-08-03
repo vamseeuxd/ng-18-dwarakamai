@@ -49,6 +49,7 @@ import {
 import { combineLatest, map, Observable, Subject, takeUntil } from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { InventoryStatusService } from "./inventory-status/inventory-status.service";
+import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.service";
 
 @Component({
   selector: "app-component",
@@ -86,6 +87,7 @@ export class AppComponent implements OnDestroy {
   readonly expensesService = inject(ExpensesService);
   readonly inventoryService = inject(InventoryService);
   readonly inventoryStatusService = inject(InventoryStatusService);
+  readonly vehicleTypesService = inject(VehicleTypesService);
   readonly vehiclesService = inject(VehiclesService);
   readonly incomeService = inject(IncomeService);
   readonly breakpointObserver = inject(BreakpointObserver);
@@ -103,15 +105,15 @@ export class AppComponent implements OnDestroy {
   ]);
 
   pages$: Observable<IPage[]> = combineLatest([
-    this.flatsService.flats$,
-    this.floorsService.floors$,
-    this.vendorsService.vendors$,
-    this.expensesService.expenses$,
-    this.inventoryService.inventory$,
-    this.vehiclesService.vehicleTypes$,
-    this.vehiclesService.vehicles$,
-    this.incomeService.incomes$,
-    this.inventoryStatusService.inventoryItemStatus$,
+    this.flatsService.items$,
+    this.floorsService.items$,
+    this.vendorsService.items$,
+    this.expensesService.items$,
+    this.inventoryService.items$,
+    this.vehicleTypesService.items$,
+    this.vehiclesService.items$,
+    this.incomeService.items$,
+    this.inventoryStatusService.items$,
   ]).pipe(
     map(
       ([
@@ -131,6 +133,7 @@ export class AppComponent implements OnDestroy {
           this.vendorsService.getPage(vendors),
           this.expensesService.getPage(floors, inventory, vendors, expenses),
           this.inventoryService.getPage(floors, inventoryItemStatus, inventory),
+          this.vehicleTypesService.getPage(vehicleTypes),
           this.vehiclesService.getPage(flats, vehicles, vehicleTypes),
           this.incomeService.getPage(flats, incomes),
           this.inventoryStatusService.getPage(inventoryItemStatus),

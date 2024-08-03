@@ -1,50 +1,50 @@
-import { inject, Injectable } from "@angular/core";
-import { Firestore, CollectionReference, collection, orderBy, collectionData, DocumentData, addDoc, doc, updateDoc, deleteDoc, getDoc, query, Query } from "@angular/fire/firestore";
+import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { Observable, of } from "rxjs";
-import { getPage, IItem, IVehicle } from "src/app/interfaces";
+import { getPage, IFormConfig, IItem, IVehicle } from "src/app/interfaces";
+import { FirestoreBase } from "../firestore-base";
+
+// constants.ts
+export const COLLECTION_NAME = "vehicles";
+export const ID_FIELD: keyof IItem = "id";
+export const ORDER_BY_FIELD: keyof IItem = "name";
+export const ENTITY_NAME = "Vehicle";
+export const ENTITY_PLURAL_NAME = "Vehicles";
+export const FORM_FIELDS: IFormConfig[] = [
+  {
+    type: "text",
+    id: "name",
+    name: "name",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "Vehicle Name",
+    required: true,
+  },
+];
+export const INITIAL_FORM_VALUES = {
+  name: "",
+  color: "",
+  make: "",
+  flat: "",
+  type: "",
+};
 
 @Injectable({
   providedIn: "root",
 })
-export class VehiclesService {
-  firestore: Firestore = inject(Firestore);
-  collection: CollectionReference = collection(this.firestore, "vehicles");
-  queryRef = query(this.collection, orderBy("name"));
-  // prettier-ignore
-  vehicles$: Observable<IVehicle[]> = collectionData<IVehicle>( this.queryRef as Query<IVehicle, DocumentData>, { idField: "id" } );
-
-  async add(value: IVehicle) {
-    delete value.id;
-    await addDoc(this.collection, value);
+export class VehiclesService extends FirestoreBase<IVehicle> {
+  constructor() {
+    super({
+      collectionName: COLLECTION_NAME,
+      orderByField: ORDER_BY_FIELD,
+      idField: ID_FIELD,
+    });
   }
 
-  async update(value: IVehicle, id: string) {
-    delete value.id;
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await updateDoc(docRef, { ...value });
-  }
-
-  async remove(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await deleteDoc(docRef);
-  }
-
-  async get(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await getDoc(docRef);
-  }
-  vehicleTypes$: Observable<IItem[]> = of([
-    { name: "Two Wheeler", id: "Two Wheeler" },
-    { name: "Four Wheeler", id: "Four Wheeler" },
-  ]);
-
-  constructor() {}
   getPage(flats: IItem[], vehicles: IVehicle[], vehicleTypes: IItem[]) {
     return getPage(
-      "Vehicle",
-      "Vehicles",
-      "Vehicles",
+      ENTITY_NAME,
+      COLLECTION_NAME,
+      ENTITY_PLURAL_NAME,
       vehicles,
       [
         {
@@ -93,13 +93,7 @@ export class VehiclesService {
           required: true,
         },
       ],
-      {
-        name: "",
-        color: "",
-        make: "",
-        flat: "",
-        type: "",
-      },
+      INITIAL_FORM_VALUES,
       (item: IVehicle): string => {
         /* prettier-ignore */
         return `<h6 class="mb-2 pb-2 border-bottom">${item.name}</h6>

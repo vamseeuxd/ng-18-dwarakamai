@@ -1,65 +1,59 @@
-import { inject, Injectable } from "@angular/core";
-import {
-  Firestore,
-  CollectionReference,
-  collection,
-  orderBy,
-  collectionData,
-  DocumentData,
-  addDoc,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  query,
-  Query,
-} from "@angular/fire/firestore";
+import { Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { Observable, of } from "rxjs";
-import { getPage, IInventoryItem, IItem } from "src/app/interfaces";
+import {
+  getPage,
+  IFormConfig,
+  IInventoryItem,
+  IItem,
+} from "src/app/interfaces";
+import { FirestoreBase } from "../firestore-base";
+
+// constants.ts
+export const COLLECTION_NAME = "inventoryItem";
+export const ID_FIELD: keyof IItem = "id";
+export const ORDER_BY_FIELD: keyof IItem = "name";
+export const ENTITY_NAME = "Inventory Item";
+export const ENTITY_PLURAL_NAME = "Inventory Items";
+export const FORM_FIELDS: IFormConfig[] = [
+  {
+    type: "text",
+    id: "name",
+    name: "name",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "New Flat Name",
+    required: true,
+  },
+];
+export const INITIAL_FORM_VALUES = {
+  name: "",
+  floor: "",
+  status: "",
+  cost: null,
+};
 
 @Injectable({
   providedIn: "root",
 })
-export class InventoryService {
-  firestore: Firestore = inject(Firestore);
-  collection: CollectionReference = collection(this.firestore, "inventoryItem");
-  queryRef = query(this.collection, orderBy("name"));
-  // prettier-ignore
-  inventory$: Observable<IInventoryItem[]> = collectionData<IInventoryItem>( this.queryRef as Query<IInventoryItem, DocumentData>, { idField: "id" } );
-
-  async add(value: IInventoryItem) {
-    delete value.id;
-    await addDoc(this.collection, value);
+export class InventoryService extends FirestoreBase<IInventoryItem> {
+  constructor() {
+    super({
+      collectionName: COLLECTION_NAME,
+      orderByField: ORDER_BY_FIELD,
+      idField: ID_FIELD,
+    });
   }
 
-  async update(value: IInventoryItem, id: string) {
-    delete value.id;
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await updateDoc(docRef, { ...value });
-  }
-
-  async remove(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await deleteDoc(docRef);
-  }
-
-  async get(id: string) {
-    const docRef = doc(this.firestore, `${this.collection.path}/${id}`);
-    await getDoc(docRef);
-  }
-
-  constructor() {}
   getPage(
     floors: IItem[],
     inventoryItemStatus: IItem[],
-    inventory: IInventoryItem[]
+    inventoryItems: IInventoryItem[]
   ) {
     return getPage(
-      "Inventory Item",
-      "inventory",
-      "Inventory",
-      inventory,
+      ENTITY_NAME,
+      COLLECTION_NAME,
+      ENTITY_PLURAL_NAME,
+      inventoryItems,
       [
         {
           type: "text",
@@ -98,12 +92,7 @@ export class InventoryService {
           required: true,
         },
       ],
-      {
-        name: "",
-        floor: "",
-        status: "",
-        cost: null,
-      },
+      INITIAL_FORM_VALUES,
       (item: IInventoryItem): string => {
         /* prettier-ignore */
         return `<h6 class="mb-2 pb-2 border-bottom">${item.name}</h6>
