@@ -50,6 +50,7 @@ import { combineLatest, map, Observable, Subject, takeUntil } from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { InventoryStatusService } from "./inventory-status/inventory-status.service";
 import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.service";
+import { PaymentsService } from "./services/Payments/payments.service";
 
 @Component({
   selector: "app-component",
@@ -90,6 +91,7 @@ export class AppComponent implements OnDestroy {
   readonly vehicleTypesService = inject(VehicleTypesService);
   readonly vehiclesService = inject(VehiclesService);
   readonly incomeService = inject(IncomeService);
+  readonly paymentsService = inject(PaymentsService);
   readonly breakpointObserver = inject(BreakpointObserver);
   getItemNameById = getItemNameById;
 
@@ -114,6 +116,7 @@ export class AppComponent implements OnDestroy {
     this.vehiclesService.items$,
     this.incomeService.items$,
     this.inventoryStatusService.items$,
+    this.paymentsService.items$,
   ]).pipe(
     map(
       ([
@@ -126,6 +129,7 @@ export class AppComponent implements OnDestroy {
         vehicles,
         incomes,
         inventoryItemStatus,
+        payments,
       ]) => {
         return [
           this.flatsService.getPage(flats),
@@ -137,6 +141,7 @@ export class AppComponent implements OnDestroy {
           this.vehiclesService.getPage(flats, vehicles, vehicleTypes),
           this.incomeService.getPage(flats, incomes),
           this.inventoryStatusService.getPage(inventoryItemStatus),
+          this.paymentsService.getPage(payments, incomes, flats),
         ];
       }
     )

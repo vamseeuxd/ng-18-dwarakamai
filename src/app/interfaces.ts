@@ -18,6 +18,13 @@ export interface IIncome extends IItem {
   amount: number;
 }
 
+export interface IPayment extends IItem {
+  flatId: string;
+  incomeId: string;
+  paid: boolean;
+  paymentDate: string;
+}
+
 export interface IInventoryItem extends IItem {
   name: string;
   floor: string;
