@@ -2,6 +2,7 @@ import {
   Component,
   effect,
   inject,
+  OnDestroy,
   signal,
   TemplateRef,
   WritableSignal,
@@ -45,7 +46,9 @@ import {
   user,
   UserCredential,
 } from "@angular/fire/auth";
-import { combineLatest, map, Observable } from "rxjs";
+import { combineLatest, map, Observable, Subject, takeUntil } from "rxjs";
+import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
+import { InventoryStatusService } from "./inventory-status/inventory-status.service";
 
 @Component({
   selector: "app-component",
@@ -74,7 +77,7 @@ import { combineLatest, map, Observable } from "rxjs";
     CdkDrag,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
   auth: Auth = inject(Auth);
   readonly dialog = inject(MatDialog);
   readonly flatsService = inject(FlatsService);
@@ -82,9 +85,22 @@ export class AppComponent {
   readonly vendorsService = inject(VendorsService);
   readonly expensesService = inject(ExpensesService);
   readonly inventoryService = inject(InventoryService);
+  readonly inventoryStatusService = inject(InventoryStatusService);
   readonly vehiclesService = inject(VehiclesService);
   readonly incomeService = inject(IncomeService);
+  readonly breakpointObserver = inject(BreakpointObserver);
   getItemNameById = getItemNameById;
+
+  destroyed = new Subject<void>();
+  fixedSideMenu: boolean;
+
+  displayNameMap = new Map([
+    [Breakpoints.XSmall, false],
+    [Breakpoints.Small, false],
+    [Breakpoints.Medium, true],
+    [Breakpoints.Large, true],
+    [Breakpoints.XLarge, true],
+  ]);
 
   pages$: Observable<IPage[]> = combineLatest([
     this.flatsService.flats$,
@@ -95,7 +111,7 @@ export class AppComponent {
     this.vehiclesService.vehicleTypes$,
     this.vehiclesService.vehicles$,
     this.incomeService.incomes$,
-    this.inventoryService.inventoryItemStatus$,
+    this.inventoryStatusService.inventoryItemStatus$,
   ]).pipe(
     map(
       ([
@@ -117,6 +133,7 @@ export class AppComponent {
           this.inventoryService.getPage(floors, inventoryItemStatus, inventory),
           this.vehiclesService.getPage(flats, vehicles, vehicleTypes),
           this.incomeService.getPage(flats, incomes),
+          this.inventoryStatusService.getPage(inventoryItemStatus),
         ];
       }
     )
@@ -151,6 +168,28 @@ export class AppComponent {
       },
       { allowSignalWrites: true }
     );
+
+    this.breakpointObserver
+      .observe([
+        Breakpoints.XSmall,
+        Breakpoints.Small,
+        Breakpoints.Medium,
+        Breakpoints.Large,
+        Breakpoints.XLarge,
+      ])
+      .pipe(takeUntil(this.destroyed))
+      .subscribe((result) => {
+        for (const query of Object.keys(result.breakpoints)) {
+          if (result.breakpoints[query]) {
+            this.fixedSideMenu = this.displayNameMap.get(query) ?? false;
+          }
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 
   async loginByGoogle() {

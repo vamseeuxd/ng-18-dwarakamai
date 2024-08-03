@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "example-app": {
+    "dwarakamai-vizag": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -23,7 +23,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/example-app",
+            "outputPath": "dist/dwarakamai-vizag",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
@@ -77,10 +77,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "example-app:build:production"
+              "buildTarget": "dwarakamai-vizag:build:production"
             },
             "development": {
-              "buildTarget": "example-app:build:development"
+              "buildTarget": "dwarakamai-vizag:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -88,7 +88,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "example-app:build"
+            "buildTarget": "dwarakamai-vizag:build"
           }
         },
         "test": {

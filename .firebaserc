@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "dwarakamai-vizag": {
+      "hosting": {
+        "dwarkamai": [
+          "dwarakamai-vizag"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "dwarakamai-vizag"
+  }
+}

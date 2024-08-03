@@ -49,11 +49,6 @@ export class InventoryService {
     await getDoc(docRef);
   }
 
-  inventoryItemStatus$: Observable<IItem[]> = of([
-    { name: "Working", id: "Working" },
-    { name: "Not Working", id: "Not Working" },
-  ]);
-
   constructor() {}
   getPage(
     floors: IItem[],

@@ -1,16 +1,30 @@
 mat-drawer-container {
   display: block;
-  width: calc(100vw - 16px);
-  height: calc(100vh - 16px);
-  margin: 8px 8px;
+  width: calc(100vw - 0px);
+  height: calc(100vh - 0px);
+  margin: 0px 0px;
 }
 .close-button {
   position: absolute;
   top: 5px;
   right: 5px;
 }
-.add-button{
+.add-button {
   position: absolute;
   bottom: 0;
   right: 0;
+}
+.list-group-item.main-item {
+  padding: 25px 20px;
+}
+.list-group-item.main-item:nth-child(4n),
+.list-group-item.main-item:last-child {
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  margin-bottom: 1rem;
+}
+
+.list-group-item.main-item:nth-child(4n - 3) {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
 }

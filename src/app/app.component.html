@@ -1,60 +1,125 @@
-<!-- prettier-ignore -->
-<mat-drawer-container autosize class="border shadow" [hasBackdrop]="true">
-  <mat-drawer #drawer class="border shadow-sm rounded-0" mode="over" style="width: 220px" >
-    <button mat-icon-button class="close-button" (click)="drawer.toggle()"> <mat-icon>close</mat-icon> </button>
+<mat-drawer-container
+  autosize
+  class="border shadow"
+  style="background-color: #fef1f4"
+  [hasBackdrop]="!fixedSideMenu"
+>
+  <mat-drawer
+    #drawer
+    class="border shadow-sm rounded-0"
+    [opened]="fixedSideMenu"
+    [style.marginTop.px]="fixedSideMenu ? 65 : 0"
+    mode="over"
+    style="width: 220px"
+  >
+    <button mat-icon-button class="close-button" (click)="drawer.toggle()">
+      <mat-icon>close</mat-icon>
+    </button>
     <ul class="list-group rounded-0">
       @for(page of pages(); track page.id){
-      <li matRipple (click)="activePage.set(page)" role="button" [class.active]="activePage()?.id === page.id" class="list-group-item rounded-0"> {{page.name}} </li>
+      <li
+        matRipple
+        (click)="activePage.set(page)"
+        role="button"
+        [class.active]="activePage()?.id === page.id"
+        class="list-group-item rounded-0"
+      >
+        {{ page.name }}
+      </li>
       }
     </ul>
   </mat-drawer>
 
   <mat-toolbar style="background: #ffd9e1">
-    <button mat-icon-button class="open-button" (click)="drawer.toggle()"> <mat-icon>menu</mat-icon> </button>
-    <h6 class="fs-6">Dwarakamai Vizag / {{activePage()?.name}}</h6>
+    <button mat-icon-button class="open-button" (click)="drawer.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <h6 class="fs-6">Dwarakamai Vizag / {{ activePage()?.name }}</h6>
     <div class="ms-auto"></div>
     @if(userDetails()){
-      <button mat-icon-button class="open-button" (click)="logout()"> <mat-icon>logout</mat-icon> </button>
+    <button mat-icon-button class="open-button" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+    </button>
     }@else {
-      <button mat-icon-button class="open-button" (click)="loginByGoogle()"> <mat-icon>login</mat-icon> </button>
+    <button mat-icon-button class="open-button" (click)="loginByGoogle()">
+      <mat-icon>login</mat-icon>
+    </button>
     }
   </mat-toolbar>
 
   <div class="container-fluid">
-      <ul class="list-group col-md-8 offset-md-2 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4 mt-2 position-relative">
-        <li class="list-group-item p-2">
-          <ul class="list-group" style="height: calc(100dvh - 120px);overflow-y: auto;overflow-x: hidden;">
-            @for(item of activePage()?.items; track item.id){
-              <li matRipple class="list-group-item d-flex justify-content-start align-items-center">                
-                  <div class="col">
-                    <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span>
-                  </div>
-                  <div class="position-absolute top-0 end-0">
-                    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu"> <mat-icon>more_vert</mat-icon> </button>
-                    <mat-menu #menu="matMenu">
-                      <button mat-menu-item (click)="deleteItem(item,deleteConfirmationDialogRef)"> <mat-icon>delete</mat-icon> <span>Delete {{activePage()?.signlerName}}</span> </button>
-                      <button mat-menu-item (click)="addItem(addOrEditDialogRef,$any(item), true)"> <mat-icon>edit</mat-icon> <span>Edit {{activePage()?.signlerName}}</span> </button>
-                    </mat-menu>
-                  </div>                
-              </li>
-            }@empty{
-              <h6 class="text-muted text-center my-3">No {{activePage()?.name}} to Show</h6>
-            }
-          </ul>
-        </li>
-        <div class="d-inline-block position-absolute bottom-0 end-0" cdkDrag>
-          <button mat-fab (click)="addItem(addOrEditDialogRef,this.activePage()?.defaultValues || {})">
-            <mat-icon>add</mat-icon>
-          </button>
-        </div>
-      </ul>
-      <!-- <pre>{{activePage.items|json}}</pre> -->
+    <ul class="list-group col-md-8 offset-md-3 mt-2 position-relative">
+      <li class="list-group-item p-3 border-0" style="background: #fef1f4">
+        <ul
+          class="list-group"
+          style="
+            height: calc(100dvh - 120px);
+            overflow-y: auto;
+            overflow-x: hidden;
+          "
+        >
+          @for(item of activePage()?.items; track item.id; let ind = $index){
+            <!-- [class.mb-3]="(ind + 1) % 4 == 0"
+            [style.borderBottomLeftRadius.rem]="(ind + 1) % 4 == 0 ? 1 : 0"
+            [style.borderBottomRightRadius.rem]="(ind + 1) % 4 == 0 ? 1 : 0"
+            [style.borderTopLeftRadius.rem]="(ind + 1) % 4 == 0 ? 1 : 0"
+            [style.borderTopRightRadius.rem]="(ind + 1) % 4 == 0 ? 1 : 0" -->
+          <li
+            matRipple
+            class="list-group-item main-item d-flex justify-content-start align-items-center shadow-sm"
+          >
+            <div class="col">
+              <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span>
+            </div>
+            <div class="position-absolute top-0 end-0">
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="menu"
+                aria-label="Example icon-button with a menu"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button
+                  mat-menu-item
+                  (click)="deleteItem(item, deleteConfirmationDialogRef)"
+                >
+                  <mat-icon>delete</mat-icon>
+                  <span>Delete {{ activePage()?.signlerName }}</span>
+                </button>
+                <button
+                  mat-menu-item
+                  (click)="addItem(addOrEditDialogRef, $any(item), true)"
+                >
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit {{ activePage()?.signlerName }}</span>
+                </button>
+              </mat-menu>
+            </div>
+          </li>
+          }@empty{
+          <h6 class="text-muted text-center my-3">
+            No {{ activePage()?.name }} to Show
+          </h6>
+          }
+        </ul>
+      </li>
+      <div class="d-inline-block position-absolute bottom-0 end-0" cdkDrag>
+        <button
+          mat-fab
+          (click)="
+            addItem(addOrEditDialogRef, this.activePage()?.defaultValues || {})
+          "
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    </ul>
   </div>
 
-
   <ng-template #deleteConfirmationDialogRef let-data>
-    <h4 mat-dialog-title>{{data.title}}</h4>
-    <mat-dialog-content>{{data.message}}</mat-dialog-content>
+    <h4 mat-dialog-title>{{ data.title }}</h4>
+    <mat-dialog-content>{{ data.message }}</mat-dialog-content>
     <mat-dialog-actions>
       <button mat-button mat-dialog-close>No</button>
       <button mat-button cdkFocusInitial (click)="data.yesClick()">Yes</button>
@@ -62,91 +127,153 @@
   </ng-template>
 
   <ng-template #addOrEditDialogRef let-data>
-    <h4 mat-dialog-title>{{data.title}}</h4>
+    <h4 mat-dialog-title>{{ data.title }}</h4>
     <mat-dialog-content>
       <form class="row" autocomplete="off" #formRef="ngForm">
-          @for (config of data.formConfig; track config.id) {
-            @switch (config.type) {
-              @case ("text") {
-                <div class="col-md-12 py-2" style="min-width: 350px;">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
-                  </mat-form-field>
-                </div>
+        @for (config of data.formConfig; track config.id) { @switch
+        (config.type) { @case ("text") {
+        <div class="col-md-12 py-2" style="min-width: 350px">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>{{ config.label }}</mat-label>
+            <input
+              [name]="config.name"
+              (input)="activePage()?.onFormChange(formRef, config.name)"
+              (keyup.enter)="data.yesClick(formRef)"
+              [ngModel]="data.defaultValues[config.name]"
+              [required]="config.required"
+              matInput
+            />
+          </mat-form-field>
+        </div>
+        } @case ("number") {
+        <div class="col-md-12 py-2" style="min-width: 350px">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>{{ config.label }}</mat-label>
+            <input
+              [name]="config.name"
+              (input)="activePage()?.onFormChange(formRef, config.name)"
+              type="number"
+              (keyup.enter)="data.yesClick(formRef)"
+              [ngModel]="data.defaultValues[config.name]"
+              [required]="config.required"
+              matInput
+            />
+          </mat-form-field>
+        </div>
+        } @case ("date") {
+        <div class="col-md-12 py-2" style="min-width: 350px">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>{{ config.label }}</mat-label>
+            <input
+              [name]="config.name"
+              (input)="activePage()?.onFormChange(formRef, config.name)"
+              type="date"
+              (keyup.enter)="data.yesClick(formRef)"
+              [ngModel]="data.defaultValues[config.name]"
+              [required]="config.required"
+              matInput
+            />
+          </mat-form-field>
+        </div>
+        } @case ("month") {
+        <div class="col-md-12 py-2" style="min-width: 350px">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>{{ config.label }}</mat-label>
+            <input
+              [name]="config.name"
+              (input)="activePage()?.onFormChange(formRef, config.name)"
+              type="month"
+              (keyup.enter)="data.yesClick(formRef)"
+              [ngModel]="data.defaultValues[config.name]"
+              [required]="config.required"
+              matInput
+            />
+          </mat-form-field>
+        </div>
+        } @case ("dropdown") {
+        <div class="col-md-12 py-2" style="min-width: 350px">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>{{ config.label }}</mat-label>
+            <input
+              [name]="config.name"
+              [matAutocomplete]="auto"
+              (keyup.enter)="data.yesClick(formRef)"
+              [ngModel]="data.defaultValues[config.name]"
+              [required]="config.required"
+              matInput
+            />
+            <mat-autocomplete
+              (optionSelected)="
+                activePage()?.onFormChange(formRef, config.name)
+              "
+              autoActiveFirstOption
+              #auto="matAutocomplete"
+              [displayWith]="displayFn(config.dataProvider(formRef))"
+            >
+              @for (option of config.dataProvider(formRef) | filterBy: ['name']:
+              formRef.value[config.name] ; track option) {
+              <mat-option [value]="option.id">{{ option.name }}</mat-option>
               }
-              @case ("number") {
-                <div class="col-md-12 py-2" style="min-width: 350px;">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" type="number" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
-                  </mat-form-field>
-                </div>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+        } @case ("multi-select") {
+        <div class="col-md-12 py-2" style="min-width: 350px">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>{{ config.label }}</mat-label>
+            <mat-select
+              (selectionChange)="
+                activePage()?.onFormChange(formRef, config.name)
+              "
+              [name]="config.name"
+              multiple
+              [ngModel]="data.defaultValues[config.name]"
+              [required]="config.required"
+            >
+              <mat-select-trigger>
+                {{
+                  (formRef.value[config.name] &&
+                    getItemNameById(
+                      config.dataProvider(formRef),
+                      formRef.value[config.name][0]
+                    )) ||
+                    ""
+                }}
+                @if ((formRef.value[config.name]?.length || 0) > 1) {
+                <span class="example-additional-selection">
+                  (+{{ (formRef.value[config.name]?.length || 0) - 1 }}
+                  {{
+                    formRef.value[config.name]?.length === 2
+                      ? "other"
+                      : "others"
+                  }})
+                </span>
+                }
+              </mat-select-trigger>
+              @for (option of config.dataProvider(formRef); track option) {
+              <mat-option [value]="option.id">{{ option.name }}</mat-option>
               }
-              @case ("date") {
-                <div class="col-md-12 py-2" style="min-width: 350px;">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" type="date" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
-                  </mat-form-field>
-                </div>
-              }
-              @case ("month") {
-                <div class="col-md-12 py-2" style="min-width: 350px;">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" (input)="activePage()?.onFormChange(formRef, config.name)" type="month" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
-                  </mat-form-field>
-                </div>
-              }
-              @case ("dropdown") {
-                <div class="col-md-12 py-2" style="min-width: 350px;">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{config.label}}</mat-label>
-                    <input [name]="config.name" [matAutocomplete]="auto" (keyup.enter)="data.yesClick(formRef)" [ngModel]="data.defaultValues[config.name]" [required]="config.required" matInput>
-                    <mat-autocomplete (optionSelected)="activePage()?.onFormChange(formRef, config.name)" autoActiveFirstOption #auto="matAutocomplete" [displayWith]="displayFn(config.dataProvider(formRef))">
-                      @for (option of config.dataProvider(formRef) | filterBy: ['name']: formRef.value[config.name] ; track option) {
-                        <mat-option [value]="option.id">{{option.name}}</mat-option>
-                      }
-                    </mat-autocomplete>
-                  </mat-form-field>
-                </div>
-              }
-              @case ("multi-select") {
-                <div class="col-md-12 py-2" style="min-width: 350px;">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{config.label}}</mat-label>
-                    <mat-select (selectionChange)="activePage()?.onFormChange(formRef, config.name)" [name]="config.name" multiple  [ngModel]="data.defaultValues[config.name]" [required]="config.required">
-                      <mat-select-trigger>
-                         {{(formRef.value[config.name] && getItemNameById(config.dataProvider(formRef),formRef.value[config.name][0]) || '')}}
-                        @if ((formRef.value[config.name]?.length || 0) > 1) {
-                          <span class="example-additional-selection">
-                            (+{{(formRef.value[config.name]?.length || 0) - 1}} {{formRef.value[config.name]?.length === 2 ? 'other' : 'others'}})
-                          </span>
-                        }
-                      </mat-select-trigger>
-                      @for (option of config.dataProvider(formRef); track option) {
-                        <mat-option [value]="option.id">{{option.name}}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              }
-            }
-          }
-          <!-- <pre>{{formRef.value|json}}</pre> -->
+            </mat-select>
+          </mat-form-field>
+        </div>
+        } } }
+        <!-- <pre>{{formRef.value|json}}</pre> -->
       </form>
     </mat-dialog-content>
     <mat-dialog-actions>
       <button mat-button cdkFocusInitial mat-dialog-close>Cancel</button>
-      <button mat-button [disabled]="formRef.invalid" (click)="data.yesClick(formRef, false)">Save</button>
+      <button
+        mat-button
+        [disabled]="formRef.invalid"
+        (click)="data.yesClick(formRef, false)"
+      >
+        Save
+      </button>
       @if (!data.isEdit) {
-        <button mat-button cdkFocusInitial (click)="data.yesClick(formRef, true)">Save & Add New</button>
+      <button mat-button cdkFocusInitial (click)="data.yesClick(formRef, true)">
+        Save & Add New
+      </button>
       }
     </mat-dialog-actions>
   </ng-template>
-  
-
-  <!-- <pre>{{activePage|json}}</pre> -->
-
 </mat-drawer-container>

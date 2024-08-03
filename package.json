@@ -1,10 +1,11 @@
 {
-  "name": "example-app",
+  "name": "dwarakamai-vizag",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration development",
+    "deploy": "ng build  --configuration development & firebase deploy",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
