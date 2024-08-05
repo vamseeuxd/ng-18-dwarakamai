@@ -1,0 +1,16 @@
+<!-- <div class="icon">DATE</div>
+    
+    -->
+<input class="input" type="month" [(ngModel)]="selectedDate" #dateInput />
+<div class="block year">
+  <div class="title">Year</div>
+  <div class="value">{{ selectedDate() | date : "YY" }}</div>
+</div>
+<div class="block month">
+  <div class="title">Month</div>
+  <div class="value">{{ selectedDate() | date : "MM" }}</div>
+</div>
+<!-- <div class="block day">
+  <div class="title">Date</div>
+  <div class="value">{{ selectedDate | date : "dd" }}</div>
+</div> -->

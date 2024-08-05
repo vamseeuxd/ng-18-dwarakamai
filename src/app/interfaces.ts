@@ -23,6 +23,8 @@ export interface IPayment extends IItem {
   incomeId: string;
   paid: boolean;
   paymentDate: string;
+  month: string;
+  amount: number;
 }
 
 export interface IInventoryItem extends IItem {
@@ -63,7 +65,7 @@ export interface IPage {
 }
 
 export interface IFormConfig {
-  type: "text" | "dropdown" | "number" | "month" | "multi-select" | "date";
+  type: "text" | "dropdown" | "number" | "month" | "multi-select" | "date" | 'hidden';
   id: string;
   name: string;
   label: string;

@@ -20,7 +20,7 @@ import { CdkDrag } from "@angular/cdk/drag-drop";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { NgPipesModule } from "ngx-pipes";
 import { MatMenuModule } from "@angular/material/menu";
-import { MatSelectModule } from "@angular/material/select";
+import { MatSelect, MatSelectModule } from "@angular/material/select";
 import {
   MatDialog,
   MatDialogActions,
@@ -35,7 +35,7 @@ import { VendorsService } from "./services/vendors/vendors.service";
 import { ExpensesService } from "./services/expenses/expenses.service";
 import { InventoryService } from "./services/inventory/inventory.service";
 import { VehiclesService } from "./services/Vehicles/vehicles.service";
-import { IncomeService } from "./services/income/income.service";
+import { MaintenanceService } from "./services/maintenance/maintenance.service";
 import { toSignal } from "@angular/core/rxjs-interop";
 import {
   Auth,
@@ -51,6 +51,7 @@ import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { InventoryStatusService } from "./inventory-status/inventory-status.service";
 import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.service";
 import { PaymentsService } from "./services/Payments/payments.service";
+import { DatePickerComponent } from "./shared/date-picker/date-picker.component";
 
 @Component({
   selector: "app-component",
@@ -77,7 +78,8 @@ import { PaymentsService } from "./services/Payments/payments.service";
     MatMenuModule,
     MatSelectModule,
     CdkDrag,
-  ],
+    DatePickerComponent
+],
 })
 export class AppComponent implements OnDestroy {
   auth: Auth = inject(Auth);
@@ -90,7 +92,7 @@ export class AppComponent implements OnDestroy {
   readonly inventoryStatusService = inject(InventoryStatusService);
   readonly vehicleTypesService = inject(VehicleTypesService);
   readonly vehiclesService = inject(VehiclesService);
-  readonly incomeService = inject(IncomeService);
+  readonly maintenanceService = inject(MaintenanceService);
   readonly paymentsService = inject(PaymentsService);
   readonly breakpointObserver = inject(BreakpointObserver);
   getItemNameById = getItemNameById;
@@ -114,7 +116,7 @@ export class AppComponent implements OnDestroy {
     this.inventoryService.items$,
     this.vehicleTypesService.items$,
     this.vehiclesService.items$,
-    this.incomeService.items$,
+    this.maintenanceService.items$,
     this.inventoryStatusService.items$,
     this.paymentsService.items$,
   ]).pipe(
@@ -127,7 +129,7 @@ export class AppComponent implements OnDestroy {
         inventory,
         vehicleTypes,
         vehicles,
-        incomes,
+        maintenances,
         inventoryItemStatus,
         payments,
       ]) => {
@@ -139,9 +141,9 @@ export class AppComponent implements OnDestroy {
           this.inventoryService.getPage(floors, inventoryItemStatus, inventory),
           this.vehicleTypesService.getPage(vehicleTypes),
           this.vehiclesService.getPage(flats, vehicles, vehicleTypes),
-          this.incomeService.getPage(flats, incomes),
+          this.maintenanceService.getPage(flats, maintenances),
           this.inventoryStatusService.getPage(inventoryItemStatus),
-          this.paymentsService.getPage(payments, incomes, flats),
+          this.paymentsService.getPage(payments, maintenances, flats),
         ];
       }
     )
@@ -150,8 +152,14 @@ export class AppComponent implements OnDestroy {
   pages = toSignal<IPage[]>(this.pages$);
   userDetails = toSignal<User | null>(user(this.auth));
   activePage: WritableSignal<IPage | null> = signal<IPage | null>(null);
+  selectedDate = signal<string>(
+    `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
+  );
 
   constructor() {
+    effect(()=>{
+      this.paymentsService.selectedMonth.next(this.selectedDate())
+    });
     effect(
       () => {
         const pages = this.pages();
@@ -281,5 +289,14 @@ export class AppComponent implements OnDestroy {
         },
       },
     });
+  }
+
+  matSelectAll(matSelectRef: MatSelect, isChecked: boolean) {
+    const options = matSelectRef.options.toArray();
+    if (isChecked) {
+      options.forEach(option => option.select());
+    } else {
+      options.forEach(option => option.deselect());
+    }
   }
 }

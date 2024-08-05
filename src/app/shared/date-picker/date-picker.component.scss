@@ -1,0 +1,84 @@
+:host {
+  display: flex;
+  position: relative;
+  width: 100px;
+  * {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-direction: column;
+  }
+  .block {
+    color: white;
+    .title {
+      font-size: 0.6rem;
+      height: 15px;
+      width: 50px;
+    }
+    .value {
+      width: 50px;
+      height: 35px;
+    }
+    &.year {
+      .title {
+        background: #3498db;
+      }
+      .value {
+        background: #5dade2;
+      }
+    }
+    &.month {
+      .title {
+        background: #f39c12;
+      }
+      .value {
+        background: #f6b517;
+      }
+    }
+    &.day {
+      .title {
+        background: #e74c3c;
+      }
+      .value {
+        background: #ec7063;
+      }
+    }
+  }
+  input {
+    position: absolute;
+    background-color: red;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+  /* &:before {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 15px;
+    content: "";
+    background: rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    z-index: 1;
+    transform-origin: 0 0;
+    transform: skewX(45deg);
+  }
+  &:after {
+    display: block;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    content: "";
+    background: rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    z-index: 1;
+    transform-origin: 0 0;
+    transform: skewX(45deg);
+  } */
+}
