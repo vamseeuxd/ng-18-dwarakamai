@@ -1,0 +1,14 @@
+<h4 mat-dialog-title>
+  <span [innerHTML]="data.title"></span>
+</h4>
+<mat-dialog-content class="mat-typography">
+  <span [innerHTML]="data.message"></span>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="data.notButtonClick()">
+    <span [innerHTML]="data.noLabel"></span>
+  </button>
+  <button mat-button (click)="data.yesButtonClick()">
+    <span [innerHTML]="data.yesLabel"></span>
+  </button>
+</mat-dialog-actions>

@@ -28,6 +28,10 @@ import {
   AddOrEditDialogComponent,
   IAddOrEditDialogData,
 } from "src/app/shared/add-or-edit-dialog/add-or-edit-dialog.component";
+import {
+  ConfirmationDialogComponent,
+  IConfirmationData,
+} from "src/app/shared/confirmation-dialog/confirmation-dialog.component";
 
 export const COLLECTION_NAME = "payments";
 export const ID_FIELD: keyof IItem = "id";
@@ -153,9 +157,8 @@ export class PaymentsService extends FirestoreBase<IPayment> {
             disabled: (item: any) => !item.paid,
             icon: "thumb_down",
             name: "Mark as Not Paid",
-            callBack: (item: IItem): void => {
-              this.remove(item.id || "");
-            },
+            callBack: (item: any): void =>
+              this.markAsNotPaid(item, flats, incomes),
           },
         ],
       },
@@ -193,6 +196,35 @@ export class PaymentsService extends FirestoreBase<IPayment> {
     `;
   }
 
+  private markAsNotPaid(item: any, flats: IItem[], incomes: IIncome[]) {
+    let dialogRef: MatDialogRef<ConfirmationDialogComponent>;
+    const data: IConfirmationData = {
+      title: "Delete Confirmation",
+      message: `Are you sure! Do you want to Delete ${getItemNameById(
+        flats,
+        item.flatId
+      )}'s ${getItemNameById(incomes, item.maintenanceId)} payment?`,
+      yesLabel: "Yes",
+      noLabel: "No",
+      notButtonClick: (): void => {
+        dialogRef.close();
+      },
+      yesButtonClick: (): void => {
+        this.remove(item.id || "");
+        dialogRef.close();
+        this.snackBar.open(
+          `${getItemNameById(flats, item.flatId)}'s ${getItemNameById(
+            incomes,
+            item.maintenanceId
+          )} payment deleted successfully `,
+          "OK"
+        );
+      },
+    };
+    dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data,
+    });
+  }
   private markAsPaid(item: any, flats: IItem[], incomes: IIncome[]) {
     let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
     const data: IAddOrEditDialogData = {
@@ -282,27 +314,5 @@ export class PaymentsService extends FirestoreBase<IPayment> {
       onFormChange: async (form: NgForm, valueChanged: string) => {},
     };
     dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
-  }
-
-  async bulkAdd(maintenanceId: string, item: IIncome) {
-    const batch: WriteBatch = writeBatch(this.firestore);
-    item.flats.forEach((flat) => {
-      if (flat) {
-        const payment: IPayment = {
-          flatId: flat,
-          amount: 0,
-          month: "",
-          paid: false,
-          paymentDate: item.month,
-          name: item.month + " Maintenance",
-          maintenanceId: "",
-        };
-        batch.set(
-          doc(this.firestore, COLLECTION_NAME, flat + payment.paymentDate),
-          payment
-        );
-      }
-    });
-    await batch.commit();
   }
 }
