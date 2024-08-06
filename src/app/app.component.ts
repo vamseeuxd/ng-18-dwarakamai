@@ -52,6 +52,7 @@ import { InventoryStatusService } from "./inventory-status/inventory-status.serv
 import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.service";
 import { PaymentsService } from "./services/Payments/payments.service";
 import { DatePickerComponent } from "./shared/date-picker/date-picker.component";
+import { AddOrEditDialogComponent } from "./shared/add-or-edit-dialog/add-or-edit-dialog.component";
 
 @Component({
   selector: "app-component",
@@ -77,6 +78,7 @@ import { DatePickerComponent } from "./shared/date-picker/date-picker.component"
     NgPipesModule,
     MatMenuModule,
     MatSelectModule,
+    AddOrEditDialogComponent,
     CdkDrag,
     DatePickerComponent
 ],

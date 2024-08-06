@@ -12,19 +12,29 @@ import { FirestoreBase } from "../firestore-base";
 import {
   collection,
   collectionData,
-  CollectionReference,
   doc,
-  DocumentReference,
-  getDoc,
   Query,
   query,
   where,
   writeBatch,
   WriteBatch,
 } from "@angular/fire/firestore";
-import { BehaviorSubject, combineLatest, map, of, switchMap } from "rxjs";
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  of,
+  switchMap,
+  take,
+} from "rxjs";
 import { FlatsService } from "../flats/flats.service";
 import moment from "moment";
+import { MatDialog, MatDialogRef } from "@angular/material/dialog";
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {
+  AddOrEditDialogComponent,
+  IAddOrEditDialogData,
+} from "src/app/shared/add-or-edit-dialog/add-or-edit-dialog.component";
 
 // constants.ts
 export const COLLECTION_NAME = "payments";
@@ -56,6 +66,9 @@ export const INITIAL_FORM_VALUES = {
 })
 export class PaymentsService extends FirestoreBase<IPayment> {
   readonly flatsService = inject(FlatsService);
+  readonly dialog = inject(MatDialog);
+  readonly snackBar = inject(MatSnackBar);
+
   constructor() {
     super({
       collectionName: COLLECTION_NAME,
@@ -120,12 +133,13 @@ export class PaymentsService extends FirestoreBase<IPayment> {
     return items$;
   }
 
-  getPaymentsBYMaintenanceId(maintenanceId: string) {
+  getPaymentsBYMaintenanceId(maintenanceId: string, flatId = "") {
     const collectionRef = collection(this.firestore, `payments`); // as CollectionReference<IIncome>;
-    const queryRef = query(
-      collectionRef,
-      where("maintenanceId", "==", maintenanceId)
-    ) as Query<IIncome>;
+    const whereQuires = [where("maintenanceId", "==", maintenanceId)];
+    if (flatId) {
+      whereQuires.push(where("flatId", "==", flatId));
+    }
+    const queryRef = query(collectionRef, ...whereQuires) as Query<IIncome>;
     const items$ = collectionData<IIncome>(queryRef, { idField: "id" });
     return items$;
   }
@@ -208,13 +222,89 @@ export class PaymentsService extends FirestoreBase<IPayment> {
             name: "Mark as Paid",
             disabled: (item: any) => !!item.paid,
             callBack: (item: any): void => {
-              delete item.name;
-              delete item.id;
-              delete item.month;
-              delete item.paymentDate;
-              item.paid = true;
-              console.log(item);
-              this.add(item);
+              let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
+              const data: IAddOrEditDialogData = {
+                title: "Update Payment Details",
+                /* title: `<pre>${JSON.stringify(item, null, 2)}</pre>`, */
+                message: "",
+                isEdit: false,
+                formConfig: [
+                  {
+                    type: "date",
+                    id: "paymentDate",
+                    name: "paymentDate",
+                    label: "Payment Date",
+                    required: true,
+                    defaultValue: null,
+                    dataProvider: (form: NgForm): IItem[] => {
+                      return [];
+                    },
+                  },
+                  {
+                    type: "dropdown",
+                    id: "flatId",
+                    name: "flatId",
+                    label: "Flat",
+                    required: true,
+                    defaultValue: getItemNameById(flats, item.flatId),
+                    dataProvider: (form: NgForm): IItem[] => {
+                      return flats;
+                    },
+                  },
+                  {
+                    type: "dropdown",
+                    id: "maintenanceId",
+                    name: "maintenanceId",
+                    label: "Maintenance Id",
+                    required: true,
+                    defaultValue: item.maintenanceId,
+                    dataProvider: (form: NgForm): IItem[] => {
+                      return incomes;
+                    },
+                  },
+                  {
+                    type: "text",
+                    id: "amount",
+                    name: "amount",
+                    label: "Amount in ₹",
+                    required: true,
+                    defaultValue: item.amount,
+                    dataProvider: (form: NgForm): IItem[] => {
+                      return [];
+                    },
+                  },
+                ],
+                defaultValues: {
+                  flatId: item.flatId,
+                  paymentDate: moment().format("YYYY-MM-DD"),
+                  maintenanceId: item.maintenanceId,
+                  amount: item.amount,
+                },
+                yesClick: async (newForm: NgForm, addNew?: boolean) => {
+                  const sub = this.getPaymentsBYMaintenanceId(
+                    newForm.value.maintenanceId,
+                    newForm.value.flatId
+                  ).pipe(take(1))
+                  .subscribe(async (existingPayment) => {
+                    if (existingPayment.length === 0) {
+                      await this.add(newForm.value);
+                      newForm.resetForm({ ...newForm.value, flatId: "" });
+                      this.snackBar.open(`${getItemNameById( flats, item.flatId )} Payment Details added for ${getItemNameById(incomes, item.maintenanceId)}`, 'OK');
+                      sub.unsubscribe();
+                      if (dialogRef && !addNew) {
+                        dialogRef.close();
+                      }
+                    } else {
+                      this.snackBar.open(`Maintenance charges have been paid by ${getItemNameById( flats, item.flatId )}.`, 'OK');
+                      sub.unsubscribe();
+                    }
+                  });
+                },
+                onFormChange: async (form: NgForm, valueChanged: string) => {
+                  // console.log("Test");
+                },
+              };
+              dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
             },
           },
           {

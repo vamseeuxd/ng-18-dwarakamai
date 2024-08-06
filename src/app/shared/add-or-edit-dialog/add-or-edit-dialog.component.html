@@ -1,0 +1,148 @@
+<h2 mat-dialog-title>
+    <span [innerHTML]="data.title"></span>
+</h2>
+<mat-dialog-content class="mat-typography">
+  <form class="row" autocomplete="off" #formRef="ngForm">
+    @for (config of data.formConfig; track config.id; let ind = $index) {
+    @switch (config.type) { @case ("text") {
+    <div class="col-md-12 py-2" style="min-width: 350px">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <input
+          [name]="config.name"
+          cdkFocusInitial
+          (input)="data.onFormChange(formRef, config.name)"
+          (keyup.enter)="data.yesClick(formRef)"
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+          matInput
+        />
+      </mat-form-field>
+    </div>
+    } @case ("number") {
+    <div class="col-md-12 py-2" style="min-width: 350px">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <input
+          [name]="config.name"
+          (input)="data.onFormChange(formRef, config.name)"
+          type="number"
+          (keyup.enter)="data.yesClick(formRef)"
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+          matInput
+        />
+      </mat-form-field>
+    </div>
+    } @case ("date") {
+    <div class="col-md-12 py-2" style="min-width: 350px">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <input
+          [name]="config.name"
+          (input)="data.onFormChange(formRef, config.name)"
+          type="date"
+          (keyup.enter)="data.yesClick(formRef)"
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+          matInput
+        />
+      </mat-form-field>
+    </div>
+    } @case ("month") {
+    <div class="col-md-12 py-2" style="min-width: 350px">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <input
+          [name]="config.name"
+          (input)="data.onFormChange(formRef, config.name)"
+          type="month"
+          (keyup.enter)="data.yesClick(formRef)"
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+          matInput
+        />
+      </mat-form-field>
+    </div>
+    } @case ("dropdown") {
+    <div class="col-md-12 py-2" style="min-width: 350px">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <input
+          [name]="config.name"
+          [matAutocomplete]="auto"
+          (keyup.enter)="data.yesClick(formRef)"
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+          matInput
+        />
+        <mat-autocomplete
+          (optionSelected)="data.onFormChange(formRef, config.name)"
+          autoActiveFirstOption
+          #auto="matAutocomplete"
+          [displayWith]="displayFn(config.dataProvider(formRef))"
+        >
+          @for (option of config.dataProvider(formRef) | filterBy: ['name']:
+          formRef.value[config.name] ; track option) {
+          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+    } @case ("multi-select") {
+    <div class="col-md-12 py-2" style="min-width: 350px">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <mat-select
+          (selectionChange)="data.onFormChange(formRef, config.name)"
+          [name]="config.name"
+          multiple
+          #matSelectRef
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+        >
+          <mat-select-trigger>
+            {{
+              (formRef.value[config.name] &&
+                getItemNameById(
+                  config.dataProvider(formRef),
+                  formRef.value[config.name][0]
+                )) ||
+                ""
+            }}
+            @if ((formRef.value[config.name]?.length || 0) > 1) {
+            <span class="example-additional-selection">
+              ({{ (formRef.value[config.name]?.length || 0) - 1 }}
+              {{
+                formRef.value[config.name]?.length === 2
+                  ? config.name + " Seleted"
+                  : config.name + " Seleted"
+              }})
+            </span>
+            }
+          </mat-select-trigger>
+          <mat-option
+            (onSelectionChange)="
+              matSelectAll(matSelectRef, $event.source.selected)
+            "
+            >Select All</mat-option
+          >
+          @for (option of config.dataProvider(formRef); track option) {
+          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    } } }
+    <!-- <pre>{{formRef.value|json}}</pre> -->
+  </form>
+  <pre>{{formRef.value|json}}</pre>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button [disabled]="formRef.invalid" (click)="data.yesClick(formRef, false)" > Save </button>
+  @if (!data.isEdit) {
+  <button mat-button [disabled]="formRef.invalid" (click)="data.yesClick(formRef, true)" > Save & Add New </button>
+  }
+</mat-dialog-actions>
+ 
