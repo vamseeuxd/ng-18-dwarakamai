@@ -45,6 +45,10 @@ export class VendorsService extends FirestoreBase<IItem> {
       (item) => item.name,
       (form: NgForm, valueChanged: string): void => {},
       {
+        showDeleteMenu: true,
+        showEditMenu: true,
+      },
+      {
         add: this.add.bind(this),
         update: this.update.bind(this),
         remove: this.remove.bind(this),

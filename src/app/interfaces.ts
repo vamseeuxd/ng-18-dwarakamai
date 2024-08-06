@@ -20,9 +20,9 @@ export interface IIncome extends IItem {
 
 export interface IPayment extends IItem {
   flatId: string;
-  incomeId: string;
   paid: boolean;
   paymentDate: string;
+  maintenanceId: string;
   month: string;
   amount: number;
 }
@@ -57,15 +57,33 @@ export interface IPage {
   onFormChange: (form: NgForm, valueChanged: string) => void;
   defaultValues: IDefaultValues;
   db?: {
-    add: (floor: IItem) => Promise<void>;
-    update: (floor: IItem, id: string) => Promise<void>;
+    add: (item: IItem) => Promise<void>;
+    update: (item: IItem, id: string) => Promise<void>;
     remove: (id: string) => Promise<void>;
     get: (id: string) => Promise<any>;
   };
+  contentMenu: {
+    showDeleteMenu: boolean;
+    showEditMenu: boolean;
+    otherMenus?: {
+      icon: string;
+      name: string;
+      disabled: (item: any) => boolean;
+      callBack: (item: IItem) => void;
+    }[];
+  };
+  hideAdd?: boolean;
 }
 
 export interface IFormConfig {
-  type: "text" | "dropdown" | "number" | "month" | "multi-select" | "date" | 'hidden';
+  type:
+    | "text"
+    | "dropdown"
+    | "number"
+    | "month"
+    | "multi-select"
+    | "date"
+    | "hidden";
   id: string;
   name: string;
   label: string;
@@ -83,12 +101,23 @@ export const getPage = (
   defaultValues: IDefaultValues,
   itemLabelCallBack: (item: any) => string,
   onFormChange: (form: NgForm, valueChanged: string) => void,
+  contentMenu: {
+    showDeleteMenu: boolean;
+    showEditMenu: boolean;
+    otherMenus?: {
+      icon: string;
+      name: string;
+      disabled: (item: any) => boolean;
+      callBack: (item: IItem) => void;
+    }[];
+  },
   db?: {
     add: (value: any) => Promise<void>;
     update: (value: any, id: string) => Promise<void>;
     remove: (id: string) => Promise<void>;
     get: (id: string) => Promise<any>;
-  }
+  },
+  hideAdd?: boolean
 ): IPage => {
   return {
     signlerName,
@@ -99,7 +128,9 @@ export const getPage = (
     defaultValues,
     itemLabelCallBack,
     onFormChange,
-    db
+    db,
+    contentMenu,
+    hideAdd,
   };
 };
 

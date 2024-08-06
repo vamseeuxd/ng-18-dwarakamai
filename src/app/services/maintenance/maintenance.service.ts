@@ -102,6 +102,10 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
       },
       (form: NgForm, valueChanged: string): void => {},
       {
+        showDeleteMenu: true,
+        showEditMenu: true,
+      },
+      {
         /* add: async (item: IIncome) => {
           console.log(item);
           const { id, ...itemWithoutId } = item;

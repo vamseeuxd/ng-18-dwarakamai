@@ -126,6 +126,10 @@ export class ExpensesService extends FirestoreBase<IExpenses> {
         }
       },
       {
+        showDeleteMenu: true,
+        showEditMenu: true,
+      },
+      {
         add: this.add.bind(this),
         update: this.update.bind(this),
         remove: this.remove.bind(this),
