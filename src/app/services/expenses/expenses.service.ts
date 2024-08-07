@@ -269,6 +269,93 @@ export class ExpensesService extends FirestoreBase<IExpenses> {
           },
         ],
       },
+      (): void => {
+        let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
+        const data: IAddOrEditDialogData = {
+          title: "Add " + ENTITY_NAME,
+          message: "",
+          isEdit: true,
+          formConfig: [
+            {
+              type: "text",
+              id: "name",
+              name: "name",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "New Expense Name",
+              required: false,
+            },
+            {
+              type: "dropdown",
+              id: "floor",
+              name: "floor",
+              defaultValue: "",
+              dataProvider: () => floors,
+              label: "Inventory Item Related Floor",
+              required: true,
+            },
+            {
+              type: "dropdown",
+              id: "inventoryItem",
+              name: "inventoryItem",
+              defaultValue: "",
+              dataProvider: (form: NgForm) => {
+                return inventory.filter((i) => i.floor == form.value.floor);
+              },
+              label: "Inventory Item",
+              required: true,
+            },
+            {
+              type: "number",
+              id: "amount",
+              name: "amount",
+              defaultValue: null,
+              dataProvider: () => [],
+              label: "Amount in ₹",
+              required: true,
+            },
+            {
+              type: "dropdown",
+              id: "vendor",
+              name: "vendor",
+              defaultValue: "",
+              dataProvider: () => vendors,
+              label: "Vendor",
+              required: true,
+            },
+            {
+              type: "date",
+              id: "startDate",
+              name: "startDate",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Start Date",
+              required: true,
+            },
+            {
+              type: "date",
+              id: "settledDate",
+              name: "settledDate",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Settled Date",
+              required: true,
+            },
+          ],
+          defaultValues: INITIAL_FORM_VALUES,
+          yesClick: async (newForm: NgForm, addNew?: boolean) => {
+            if (!addNew) {
+              if (newForm.valid && newForm.value.name.trim().length > 0) {
+                this.add(newForm.value);
+                newForm.resetForm({});
+                dialogRef.close();
+              }
+            }
+          },
+          onFormChange: (form: NgForm, valueChanged: string): void => {},
+        };
+        dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
+      },
       {
         add: this.add.bind(this),
         update: this.update.bind(this),

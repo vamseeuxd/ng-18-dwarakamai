@@ -1,10 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import {
-  getPage,
-  IIncome,
-  IItem,
-} from "src/app/interfaces";
+import { getPage, IIncome, IItem } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { PaymentsService } from "../Payments/payments.service";
 import moment from "moment";
@@ -175,15 +171,6 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
                     label: "Maintenance Month",
                     required: true,
                   },
-                  /* {
-                    type: "multi-select",
-                    id: "flats",
-                    name: "flats",
-                    defaultValue: "",
-                    dataProvider: () => flats,
-                    label: "Flats to Pay",
-                    required: true,
-                  }, */
                   {
                     type: "number",
                     id: "amount",
@@ -211,15 +198,56 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
           },
         ],
       },
+      (): void => {
+        let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
+        const data: IAddOrEditDialogData = {
+          title: "Add " + ENTITY_NAME,
+          message: "",
+          isEdit: true,
+          formConfig: [
+            {
+              type: "text",
+              id: "name",
+              name: "name",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Maintenance Name",
+              required: true,
+            },
+            {
+              type: "month",
+              id: "month",
+              name: "month",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Maintenance Month",
+              required: true,
+            },
+            {
+              type: "number",
+              id: "amount",
+              name: "amount",
+              defaultValue: null,
+              dataProvider: () => [],
+              label: "Amount in ₹",
+              required: true,
+            },
+          ],
+          defaultValues: INITIAL_FORM_VALUES,
+          yesClick: async (newForm: NgForm, addNew?: boolean) => {
+            if (!addNew) {
+              if (newForm.valid && newForm.value.name.trim().length > 0) {
+                this.add(newForm.value);
+                newForm.resetForm({});
+                dialogRef.close();
+              }
+            }
+          },
+          onFormChange: (form: NgForm, valueChanged: string): void => {},
+        };
+        dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
+      },
       {
-        /* add: async (item: IIncome) => {
-          const { id, ...itemWithoutId } = item;
-          itemWithoutId.flats = itemWithoutId.flats.filter((x) => !!x);
-          const collectionRef = collection(this.firestore, COLLECTION_NAME);
-          const doc = await addDoc(collectionRef, itemWithoutId);
-          console.log(this.collection, doc.id);
-          await this.paymentsService.bulkAdd(doc.id, item);
-        }, */
         add: this.add.bind(this),
         update: this.update.bind(this),
         remove: this.remove.bind(this),

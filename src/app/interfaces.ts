@@ -72,6 +72,7 @@ export interface IPage {
       callBack: (item: IItem) => void;
     }[];
   };
+  addCallBack: () => void;
   hideAdd?: boolean;
 }
 
@@ -112,6 +113,7 @@ export const getPage = (
       callBack: (item: IItem) => void;
     }[];
   },
+  addCallBack: () => void,
   db?: {
     add: (value: any) => Promise<void>;
     update: (value: any, id: string) => Promise<void>;
@@ -131,6 +133,7 @@ export const getPage = (
     onFormChange,
     db,
     contentMenu,
+    addCallBack,
     hideAdd,
   };
 };

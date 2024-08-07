@@ -203,6 +203,64 @@ export class InventoryService extends FirestoreBase<IInventoryItem> {
           },
         ],
       },
+      (): void => {
+        let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
+        const data: IAddOrEditDialogData = {
+          title: "Add " + ENTITY_NAME,
+          message: "",
+          isEdit: true,
+          formConfig: [
+            {
+              type: "text",
+              id: "name",
+              name: "name",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Inventory Item Name",
+              required: false,
+            },
+            {
+              type: "dropdown",
+              id: "floor",
+              name: "floor",
+              defaultValue: "",
+              dataProvider: () => floors,
+              label: "Item Related Floor",
+              required: true,
+            },
+            {
+              type: "dropdown",
+              id: "status",
+              name: "status",
+              defaultValue: "",
+              dataProvider: () => inventoryItemStatus,
+              label: "Item Status",
+              required: true,
+            },
+            {
+              type: "number",
+              id: "cost",
+              name: "cost",
+              defaultValue: null,
+              dataProvider: () => [],
+              label: "Item Cost Rupees",
+              required: true,
+            },
+          ],
+          defaultValues: INITIAL_FORM_VALUES,
+          yesClick: async (newForm: NgForm, addNew?: boolean) => {
+            if (!addNew) {
+              if (newForm.valid && newForm.value.name.trim().length > 0) {
+                this.add(newForm.value);
+                newForm.resetForm({});
+                dialogRef.close();
+              }
+            }
+          },
+          onFormChange: (form: NgForm, valueChanged: string): void => {},
+        };
+        dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
+      },
       {
         add: this.add.bind(this),
         update: this.update.bind(this),

@@ -159,7 +159,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
             name: "Mark as Paid",
             disabled: (item: any) => !!item.paid,
             callBack: (item: any): void =>
-              this.markAsPaid(item, flats, incomes, paymentsBy),
+              this.markAsPaid(item, flats, incomes, paymentsBy, true),
           },
           {
             disabled: (item: any) => !item.paid,
@@ -170,6 +170,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
           },
         ],
       },
+      (): void => this.markAsPaid(INITIAL_FORM_VALUES, flats, incomes, paymentsBy, true),
       {
         add: this.add.bind(this),
         update: this.update.bind(this),
@@ -242,11 +243,12 @@ export class PaymentsService extends FirestoreBase<IPayment> {
     item: any,
     flats: IItem[],
     incomes: IIncome[],
-    paymentsBy: IItem[]
+    paymentsBy: IItem[],
+    isAdd: boolean
   ) {
     let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
     const data: IAddOrEditDialogData = {
-      title: "Update Payment Details",
+      title: isAdd ? "Add Payment Details" : "Update Payment Details",
       message: "",
       isEdit: false,
       formConfig: [
@@ -313,7 +315,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
           .pipe(take(1))
           .subscribe(async (existingPayment) => {
             if (existingPayment.length === 0) {
-              await this.add(newForm.value);
+              await isAdd ? this.add(newForm.value) : this.update(newForm.value, item.id);
               newForm.resetForm({ ...newForm.value, flatId: "" });
               this.snackBar.open(
                 `${getItemNameById(

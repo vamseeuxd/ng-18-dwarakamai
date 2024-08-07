@@ -112,6 +112,26 @@ export class PaymentByService extends FirestoreBase<IItem> {
             },
           },
         ],
+      },(): void => {
+        let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
+        const data: IAddOrEditDialogData = {
+          title: "Add " + ENTITY_NAME,
+          message: "",
+          isEdit: true,
+          formConfig: FORM_FIELDS,
+          defaultValues: INITIAL_FORM_VALUES,
+          yesClick: async (newForm: NgForm, addNew?: boolean) => {
+            if (!addNew) {
+              if (newForm.valid && newForm.value.name.trim().length > 0) {
+                this.add(newForm.value);
+                newForm.resetForm({});
+                dialogRef.close();
+              }
+            }
+          },
+          onFormChange: (form: NgForm, valueChanged: string): void => {},
+        };
+        dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
       },
       {
         add: this.add.bind(this),

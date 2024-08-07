@@ -68,23 +68,52 @@
             <div class="col">
               <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span>
             </div>
-            @if(activePage()?.contentMenu?.showDeleteMenu || activePage()?.contentMenu?.showEditMenu || activePage()?.contentMenu?.otherMenus){
-              <div class="position-absolute top-0 end-0">
-                <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" > <mat-icon>more_vert</mat-icon> </button>
-                <mat-menu #menu="matMenu">
-                  @if(activePage()?.contentMenu?.showDeleteMenu){
-                    <button mat-menu-item (click)="deleteItem(item, deleteConfirmationDialogRef)" > <mat-icon>delete</mat-icon> <span>Delete {{ activePage()?.signlerName }}</span> </button>
-                  }
-                  @if(activePage()?.contentMenu?.showEditMenu){
-                    <button mat-menu-item (click)="addItem(addOrEditDialogRef, $any(item), true)" > <mat-icon>edit</mat-icon> <span>Edit {{ activePage()?.signlerName }}</span> </button>
-                  }
-                  @if(activePage()?.contentMenu?.otherMenus){
-                    <ng-container *ngFor="let contentMenu of activePage()?.contentMenu?.otherMenus">
-                      <button mat-menu-item [disabled]="contentMenu.disabled(item)" (click)="contentMenu.callBack(item)" > <mat-icon>{{contentMenu.icon}}</mat-icon> <span>{{ contentMenu.name }}</span> </button>
-                    </ng-container>
-                  }
-                </mat-menu>
-              </div>
+            @if(activePage()?.contentMenu?.showDeleteMenu ||
+            activePage()?.contentMenu?.showEditMenu ||
+            activePage()?.contentMenu?.otherMenus){
+            <div class="position-absolute top-0 end-0">
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="menu"
+                aria-label="Example icon-button with a menu"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                @if(activePage()?.contentMenu?.showDeleteMenu){
+                <button
+                  mat-menu-item
+                  (click)="deleteItem(item, deleteConfirmationDialogRef)"
+                >
+                  <mat-icon>delete</mat-icon>
+                  <span>Delete {{ activePage()?.signlerName }}</span>
+                </button>
+                } @if(activePage()?.contentMenu?.showEditMenu){
+                <button
+                  mat-menu-item
+                  (click)="addItem(addOrEditDialogRef, $any(item), true)"
+                >
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit {{ activePage()?.signlerName }}</span>
+                </button>
+                } @if(activePage()?.contentMenu?.otherMenus){
+                <ng-container
+                  *ngFor="
+                    let contentMenu of activePage()?.contentMenu?.otherMenus
+                  "
+                >
+                  <button
+                    mat-menu-item
+                    [disabled]="contentMenu.disabled(item)"
+                    (click)="contentMenu.callBack(item)"
+                  >
+                    <mat-icon>{{ contentMenu.icon }}</mat-icon>
+                    <span>{{ contentMenu.name }}</span>
+                  </button>
+                </ng-container>
+                }
+              </mat-menu>
+            </div>
             }
           </li>
           }@empty{
@@ -95,20 +124,22 @@
         </ul>
       </li>
       @if(!activePage()?.hideAdd){
-        <div class="d-inline-block position-absolute bottom-0 end-0" cdkDrag>
-          <button mat-fab (click)=" addItem(addOrEditDialogRef, this.activePage()?.defaultValues || {}) " >
-            <mat-icon>add</mat-icon>
-          </button>
-        </div>
+      <div class="d-inline-block position-absolute bottom-0 end-0" cdkDrag>
+        <button mat-fab (click)="activePage()?.addCallBack()">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
       }
 
       <!-- activePage()?.id === 'maintenances' -->
       @if(activePage()?.id === 'payments'){
-        <div class="d-inline-block position-absolute bottom-0 start-0" cdkDrag>
-          <app-date-picker class="shadow-sm border" [(selectedDate)]="selectedDate" />
-        </div>
+      <div class="d-inline-block position-absolute bottom-0 start-0" cdkDrag>
+        <app-date-picker
+          class="shadow-sm border"
+          [(selectedDate)]="selectedDate"
+        />
+      </div>
       }
-
     </ul>
   </div>
 
@@ -283,6 +314,4 @@
       }
     </mat-dialog-actions>
   </ng-template>
-
-  
 </mat-drawer-container>

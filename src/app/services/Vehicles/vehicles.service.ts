@@ -4,8 +4,14 @@ import { getPage, IFormConfig, IItem, IVehicle } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { AddOrEditDialogComponent, IAddOrEditDialogData } from "src/app/shared/add-or-edit-dialog/add-or-edit-dialog.component";
-import { ConfirmationDialogComponent, IConfirmationData } from "src/app/shared/confirmation-dialog/confirmation-dialog.component";
+import {
+  AddOrEditDialogComponent,
+  IAddOrEditDialogData,
+} from "src/app/shared/add-or-edit-dialog/add-or-edit-dialog.component";
+import {
+  ConfirmationDialogComponent,
+  IConfirmationData,
+} from "src/app/shared/confirmation-dialog/confirmation-dialog.component";
 
 // constants.ts
 export const COLLECTION_NAME = "vehicles";
@@ -207,6 +213,73 @@ export class VehiclesService extends FirestoreBase<IVehicle> {
             },
           },
         ],
+      },
+      (): void => {
+        let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
+        const data: IAddOrEditDialogData = {
+          title: "Add " + ENTITY_NAME,
+          message: "",
+          isEdit: true,
+          formConfig: [
+            {
+              type: "text",
+              id: "name",
+              name: "name",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Vehicle Number",
+              required: true,
+            },
+            {
+              type: "text",
+              id: "color",
+              name: "color",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Vehicle Color",
+              required: true,
+            },
+            {
+              type: "text",
+              id: "make",
+              name: "make",
+              defaultValue: "",
+              dataProvider: () => [],
+              label: "Vehicle Make",
+              required: true,
+            },
+            {
+              type: "dropdown",
+              id: "flat",
+              name: "flat",
+              defaultValue: "",
+              dataProvider: () => flats,
+              label: "Vehicle Related Flat",
+              required: true,
+            },
+            {
+              type: "dropdown",
+              id: "type",
+              name: "type",
+              defaultValue: "",
+              dataProvider: () => vehicleTypes,
+              label: "Vehicle Type",
+              required: true,
+            },
+          ],
+          defaultValues: INITIAL_FORM_VALUES,
+          yesClick: async (newForm: NgForm, addNew?: boolean) => {
+            if (!addNew) {
+              if (newForm.valid && newForm.value.name.trim().length > 0) {
+                this.add(newForm.value);
+                newForm.resetForm({});
+                dialogRef.close();
+              }
+            }
+          },
+          onFormChange: (form: NgForm, valueChanged: string): void => {},
+        };
+        dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
       },
       {
         add: this.add.bind(this),
