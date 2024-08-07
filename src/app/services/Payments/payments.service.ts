@@ -3,7 +3,6 @@ import { NgForm } from "@angular/forms";
 import {
   getItemNameById,
   getPage,
-  IFormConfig,
   IIncome,
   IItem,
   IPayment,
@@ -16,8 +15,6 @@ import {
   Query,
   query,
   where,
-  writeBatch,
-  WriteBatch,
 } from "@angular/fire/firestore";
 import { BehaviorSubject, combineLatest, map, of, switchMap, take } from "rxjs";
 import { FlatsService } from "../flats/flats.service";
@@ -32,31 +29,6 @@ import {
   ConfirmationDialogComponent,
   IConfirmationData,
 } from "src/app/shared/confirmation-dialog/confirmation-dialog.component";
-
-export const COLLECTION_NAME = "payments";
-export const ID_FIELD: keyof IItem = "id";
-export const ORDER_BY_FIELD: keyof IItem = "name";
-export const ENTITY_NAME = "Payment";
-export const ENTITY_PLURAL_NAME = "Payments";
-export const INITIAL_FORM_VALUES = {
-  flatId: "",
-  incomeId: "",
-  paid: false,
-  paymentDate: "",
-  name: "",
-};
-
-export const FORM_FIELDS: IFormConfig[] = [
-  {
-    type: "text",
-    id: "name",
-    name: "name",
-    defaultValue: "",
-    dataProvider: () => [],
-    label: "New Flat Name",
-    required: true,
-  },
-];
 
 @Injectable({
   providedIn: "root",
@@ -95,7 +67,6 @@ export class PaymentsService extends FirestoreBase<IPayment> {
       this.flatsService.items$,
     ]).pipe(
       map(([{ maintenancesRef, payments }, flats]) => {
-        console.log(payments);
         return maintenancesRef
           ? flats.map((flat) => ({
               flatId: flat.id || "",
@@ -170,7 +141,8 @@ export class PaymentsService extends FirestoreBase<IPayment> {
           },
         ],
       },
-      (): void => this.markAsPaid(INITIAL_FORM_VALUES, flats, incomes, paymentsBy, true),
+      (): void =>
+        this.markAsPaid(INITIAL_FORM_VALUES, flats, incomes, paymentsBy, true),
       {
         add: this.add.bind(this),
         update: this.update.bind(this),
@@ -182,7 +154,6 @@ export class PaymentsService extends FirestoreBase<IPayment> {
   }
 
   private generatePaymentHTML(item: IPayment, flats: IItem[]): string {
-    // return `<pre>${JSON.stringify(item,null,2)}</pre>`
     return `
       <div class="position-relative">
         <div class="row">
@@ -213,13 +184,13 @@ export class PaymentsService extends FirestoreBase<IPayment> {
   private markAsNotPaid(item: any, flats: IItem[], incomes: IIncome[]) {
     let dialogRef: MatDialogRef<ConfirmationDialogComponent>;
     const data: IConfirmationData = {
-      title: "Delete Confirmation",
-      message: `Are you sure! Do you want to Delete ${getItemNameById(
+      title: DELETE_DIALOG_CONFIG.title,
+      message: `${DELETE_DIALOG_CONFIG.messagePrefix}${getItemNameById(
         flats,
         item.flatId
-      )}'s ${getItemNameById(incomes, item.maintenanceId)} payment?`,
-      yesLabel: "Yes",
-      noLabel: "No",
+      )}${DELETE_DIALOG_CONFIG.messageSuffix}`,
+      yesLabel: DELETE_DIALOG_CONFIG.yesLabel,
+      noLabel: DELETE_DIALOG_CONFIG.noLabel,
       notButtonClick: (): void => {
         dialogRef.close();
       },
@@ -227,11 +198,11 @@ export class PaymentsService extends FirestoreBase<IPayment> {
         this.remove(item.id || "");
         dialogRef.close();
         this.snackBar.open(
-          `${getItemNameById(flats, item.flatId)}'s ${getItemNameById(
-            incomes,
-            item.maintenanceId
-          )} payment deleted successfully `,
-          "OK"
+          `${DELETE_DIALOG_CONFIG.successMessagePrefix}${getItemNameById(
+            flats,
+            item.flatId
+          )}${DELETE_DIALOG_CONFIG.successMessageSuffix}`,
+          DELETE_DIALOG_CONFIG.okLabel
         );
       },
     };
@@ -239,6 +210,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
       data,
     });
   }
+
   private markAsPaid(
     item: any,
     flats: IItem[],
@@ -248,58 +220,17 @@ export class PaymentsService extends FirestoreBase<IPayment> {
   ) {
     let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
     const data: IAddOrEditDialogData = {
-      title: isAdd ? "Add Payment Details" : "Update Payment Details",
-      message: "",
-      isEdit: false,
-      formConfig: [
-        {
-          type: "date",
-          id: "paymentDate",
-          name: "paymentDate",
-          label: "Payment Date",
-          required: true,
-          defaultValue: null,
-          dataProvider: (form: NgForm): IItem[] => [],
-        },
-        {
-          type: "dropdown",
-          id: "flatId",
-          name: "flatId",
-          label: "Flat",
-          required: true,
-          defaultValue: getItemNameById(flats, item.flatId),
-          dataProvider: (form: NgForm): IItem[] => flats,
-        },
-        {
-          type: "dropdown",
-          id: "maintenanceId",
-          name: "maintenanceId",
-          label: "Maintenance Id",
-          required: true,
-          defaultValue: item.maintenanceId,
-          dataProvider: (form: NgForm): IItem[] => incomes,
-        },
-        {
-          type: "dropdown",
-          id: "paymentBy",
-          name: "paymentBy",
-          label: "Payment By",
-          required: true,
-          defaultValue: item.paymentBy,
-          dataProvider: (form: NgForm): IItem[] => {
-            return paymentsBy;
-          },
-        },
-        {
-          type: "text",
-          id: "amount",
-          name: "amount",
-          label: "Amount in ₹",
-          required: true,
-          defaultValue: item.amount,
-          dataProvider: (form: NgForm): IItem[] => [],
-        },
-      ],
+      title: isAdd
+        ? MARK_PAID_DIALOG_CONFIG.titleAdd
+        : MARK_PAID_DIALOG_CONFIG.titleUpdate,
+      message: MARK_PAID_DIALOG_CONFIG.message,
+      isEdit: MARK_PAID_DIALOG_CONFIG.isEdit,
+      formConfig: MARK_PAID_DIALOG_CONFIG.formFields(
+        flats,
+        incomes,
+        item,
+        paymentsBy
+      ),
       defaultValues: {
         flatId: item.flatId,
         paymentDate: moment().format("YYYY-MM-DD"),
@@ -315,7 +246,9 @@ export class PaymentsService extends FirestoreBase<IPayment> {
           .pipe(take(1))
           .subscribe(async (existingPayment) => {
             if (existingPayment.length === 0) {
-              await isAdd ? this.add(newForm.value) : this.update(newForm.value, item.id);
+              await (isAdd
+                ? this.add(newForm.value)
+                : this.update(newForm.value, item.id));
               newForm.resetForm({ ...newForm.value, flatId: "" });
               this.snackBar.open(
                 `${getItemNameById(
@@ -348,3 +281,97 @@ export class PaymentsService extends FirestoreBase<IPayment> {
     dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
   }
 }
+
+import { IFormConfig } from "src/app/interfaces";
+
+export const COLLECTION_NAME = "payments";
+export const ID_FIELD = "id" as const;
+export const ORDER_BY_FIELD = "name" as const;
+export const ENTITY_NAME = "Payment";
+export const ENTITY_PLURAL_NAME = "Payments";
+export const INITIAL_FORM_VALUES = {
+  flatId: "",
+  incomeId: "",
+  paid: false,
+  paymentDate: "",
+  name: "",
+};
+export const FORM_FIELDS: IFormConfig[] = [
+  {
+    type: "text",
+    id: "name",
+    name: "name",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "New Flat Name",
+    required: true,
+  },
+];
+export const DELETE_DIALOG_CONFIG = {
+  title: "Delete Confirmation",
+  messagePrefix: "Are you sure! Do you want to Delete ",
+  messageSuffix: "'s payment?",
+  yesLabel: "Yes",
+  noLabel: "No",
+  successMessagePrefix: "Payment for ",
+  successMessageSuffix: " deleted successfully ",
+  okLabel: "OK",
+};
+export const MARK_PAID_DIALOG_CONFIG = {
+  titleAdd: "Add Payment Details",
+  titleUpdate: "Update Payment Details",
+  message: "",
+  isEdit: false,
+  formFields: (
+    flats: IItem[],
+    incomes: any,
+    item: { flatId: string; maintenanceId: any; paymentBy: any; amount: any },
+    paymentsBy: any
+  ): IFormConfig[] => [
+    {
+      type: "date",
+      id: "paymentDate",
+      name: "paymentDate",
+      label: "Payment Date",
+      required: true,
+      defaultValue: moment().format("YYYY-MM-DD"),
+      dataProvider: () => [],
+    },
+    {
+      type: "dropdown",
+      id: "flatId",
+      name: "flatId",
+      label: "Flat",
+      required: true,
+      defaultValue: getItemNameById(flats, item.flatId),
+      dataProvider: () => flats,
+    },
+    {
+      type: "dropdown",
+      id: "maintenanceId",
+      name: "maintenanceId",
+      label: "Maintenance Id",
+      required: true,
+      defaultValue: item.maintenanceId,
+      dataProvider: () => incomes,
+    },
+    {
+      type: "dropdown",
+      id: "paymentBy",
+      name: "paymentBy",
+      label: "Payment By",
+      required: true,
+      defaultValue: item.paymentBy,
+      dataProvider: () => paymentsBy,
+    },
+    {
+      type: "text",
+      id: "amount",
+      name: "amount",
+      label: "Amount in ₹",
+      required: true,
+      defaultValue: item.amount,
+      dataProvider: () => [],
+    },
+  ],
+};

@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { getPage, IIncome, IItem } from "src/app/interfaces";
+import { getPage, IIncome } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { PaymentsService } from "../Payments/payments.service";
 import moment from "moment";
@@ -15,19 +15,6 @@ import {
   IConfirmationData,
 } from "src/app/shared/confirmation-dialog/confirmation-dialog.component";
 
-// constants.ts
-export const COLLECTION_NAME = "maintenances";
-export const ID_FIELD: keyof IItem = "id";
-export const ORDER_BY_FIELD: keyof IItem = "name";
-export const ENTITY_NAME = "Maintenance";
-export const ENTITY_PLURAL_NAME = "Maintenances";
-export const INITIAL_FORM_VALUES = {
-  name: "",
-  id: "",
-  month: "",
-  amount: 0,
-};
-
 @Injectable({
   providedIn: "root",
 })
@@ -35,6 +22,7 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
   readonly paymentsService = inject(PaymentsService);
+
   constructor() {
     super({
       collectionName: COLLECTION_NAME,
@@ -49,61 +37,27 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
       COLLECTION_NAME,
       ENTITY_PLURAL_NAME,
       incomes,
-      [
-        {
-          type: "text",
-          id: "name",
-          name: "name",
-          defaultValue: "",
-          dataProvider: () => [],
-          label: "Maintenance Name",
-          required: true,
-        },
-        {
-          type: "month",
-          id: "month",
-          name: "month",
-          defaultValue: "",
-          dataProvider: () => [],
-          label: "Maintenance Month",
-          required: true,
-        },
-        /* {
-          type: "multi-select",
-          id: "flats",
-          name: "flats",
-          defaultValue: "",
-          dataProvider: () => flats,
-          label: "Flats to Pay",
-          required: true,
-        }, */
-        {
-          type: "number",
-          id: "amount",
-          name: "amount",
-          defaultValue: null,
-          dataProvider: () => [],
-          label: "Amount in ₹",
-          required: true,
-        },
-      ],
+      FORM_FIELDS,
       INITIAL_FORM_VALUES,
       (item: IIncome): string => {
-        /* prettier-ignore */
         return `
-        <div class="m-0 p-0 pe-4 ">
+        <div class="m-0 p-0 pe-4">
           <div class="d-flex justify-content-between align-items-center">
-            <span> ${ moment(item.month, 'YYYY-MM').format('MMMM-YYYY') } </span>
+            <span>${moment(item.month, "YYYY-MM").format("MMMM-YYYY")}</span>
             <span>
               <small>
-              (<span class="text-success"> ${new Intl.NumberFormat( "en-IN" ).format(item.amount || 0)} ₹ </span>
-              <span class="text-secondary">* ${ flats.length } Flats</span>)
+              (<span class="text-success"> ${new Intl.NumberFormat(
+                "en-IN"
+              ).format(item.amount || 0)} ₹ </span>
+              <span class="text-secondary">* ${flats.length} Flats</span>)
               </small>
-              <span class="text-success fw-bold">${new Intl.NumberFormat("en-IN").format( item.amount * flats.length || 0 )} ₹</span>
+              <span class="text-success fw-bold">${new Intl.NumberFormat(
+                "en-IN"
+              ).format(item.amount * flats.length || 0)} ₹</span>
             </span>
           </div>
           <small class="m-0 p-0 text-muted">${item.name}</small>
-        </div> `;
+        </div>`;
       },
       (form: NgForm, valueChanged: string): void => {},
       {
@@ -113,25 +67,21 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
           {
             icon: "delete",
             name: "Delete",
-            disabled: (item: any): boolean => {
-              return false;
-            },
+            disabled: (item: any): boolean => false,
             callBack: (item: IItem): void => {
               let dialogRef: MatDialogRef<ConfirmationDialogComponent>;
               const data: IConfirmationData = {
-                title: "Delete Confirmation",
-                message: `Are you sure! Do you want to Delete ${item.name}?`,
-                yesLabel: "Yes",
-                noLabel: "No",
-                notButtonClick: (): void => {
-                  dialogRef.close();
-                },
+                title: DELETE_DIALOG_CONFIG.title,
+                message: `${DELETE_DIALOG_CONFIG.messagePrefix}${item.name}${DELETE_DIALOG_CONFIG.messageSuffix}`,
+                yesLabel: DELETE_DIALOG_CONFIG.yesLabel,
+                noLabel: DELETE_DIALOG_CONFIG.noLabel,
+                notButtonClick: (): void => dialogRef.close(),
                 yesButtonClick: (): void => {
                   this.remove(item.id || "");
                   dialogRef.close();
                   this.snackBar.open(
-                    ` ${item.name} deleted successfully `,
-                    "OK"
+                    `${item.name}${DELETE_DIALOG_CONFIG.successMessagePrefix}${DELETE_DIALOG_CONFIG.successMessageSuffix}`,
+                    DELETE_DIALOG_CONFIG.okLabel
                   );
                 },
               };
@@ -143,44 +93,14 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
           {
             icon: "edit",
             name: "Edit",
-            disabled: (item: any): boolean => {
-              return false;
-            },
+            disabled: (item: any): boolean => false,
             callBack: (item: IItem): void => {
               let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
               const data: IAddOrEditDialogData = {
-                title: "Update " + ENTITY_NAME,
-                message: "",
+                title: `${EDIT_DIALOG_CONFIG.titlePrefix}${ENTITY_NAME}`,
+                message: EDIT_DIALOG_CONFIG.emptyMessage,
                 isEdit: true,
-                formConfig: [
-                  {
-                    type: "text",
-                    id: "name",
-                    name: "name",
-                    defaultValue: "",
-                    dataProvider: () => [],
-                    label: "Maintenance Name",
-                    required: true,
-                  },
-                  {
-                    type: "month",
-                    id: "month",
-                    name: "month",
-                    defaultValue: "",
-                    dataProvider: () => [],
-                    label: "Maintenance Month",
-                    required: true,
-                  },
-                  {
-                    type: "number",
-                    id: "amount",
-                    name: "amount",
-                    defaultValue: null,
-                    dataProvider: () => [],
-                    label: "Amount in ₹",
-                    required: true,
-                  },
-                ],
+                formConfig: FORM_FIELDS,
                 defaultValues: item as any,
                 yesClick: async (newForm: NgForm, addNew?: boolean) => {
                   if (!addNew) {
@@ -201,38 +121,10 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
       (): void => {
         let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
         const data: IAddOrEditDialogData = {
-          title: "Add " + ENTITY_NAME,
-          message: "",
+          title: `${ADD_DIALOG_CONFIG.titlePrefix}${ENTITY_NAME}`,
+          message: ADD_DIALOG_CONFIG.emptyMessage,
           isEdit: true,
-          formConfig: [
-            {
-              type: "text",
-              id: "name",
-              name: "name",
-              defaultValue: "",
-              dataProvider: () => [],
-              label: "Maintenance Name",
-              required: true,
-            },
-            {
-              type: "month",
-              id: "month",
-              name: "month",
-              defaultValue: "",
-              dataProvider: () => [],
-              label: "Maintenance Month",
-              required: true,
-            },
-            {
-              type: "number",
-              id: "amount",
-              name: "amount",
-              defaultValue: null,
-              dataProvider: () => [],
-              label: "Amount in ₹",
-              required: true,
-            },
-          ],
+          formConfig: FORM_FIELDS,
           defaultValues: INITIAL_FORM_VALUES,
           yesClick: async (newForm: NgForm, addNew?: boolean) => {
             if (!addNew) {
@@ -257,27 +149,66 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
   }
 }
 
-/* return `<h6 role="button" class="my-2 d-flex justify-content-between pe-4 align-items-center">
-          <span>
-            ${ moment(item.month, 'YYYY-MM').format('YYYY-MMMM') } <small>(${item.name})</small>
-          </span>
-          <span class="text-success fw-bold">${new Intl.NumberFormat( "en-IN" ).format(item.amount || 0)} ₹</span>
-        </h6>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1 d-none">
-            Amount for ${ flats.length } Flats : <span class="text-success fw-bold">${new Intl.NumberFormat("en-IN").format( item.amount * flats.length || 0 )} ₹</span>
-        </div>
-        <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1 d-none">
-          Month : ${ moment(item.month, 'YYYY-MM').format('YYYY-MMMM') }
-        </div>
-        <div class="p-2 m-2 border shadow-sm d-none"> 
-          <p class="m-0 p-0 border-bottom pb-1 mb-1">Flats Needs to Pay : </p> 
-          <div class="row g-1">
-            ${flats.map((f) => { 
-              return `
-                <div class="col-6 col-md-3 col-lg-2">
-                  <div class="border fs-7 w-100 text-center rounded-pill px-2 me-1 mb-1">${f.name}</div>
-                </div>
-              `; }) .join("")
-            }
-          </div>
-        </div> `; */
+import { IFormConfig, IItem } from "src/app/interfaces";
+
+export const COLLECTION_NAME = "maintenances";
+export const ID_FIELD: keyof IItem = "id";
+export const ORDER_BY_FIELD: keyof IItem = "name";
+export const ENTITY_NAME = "Maintenance";
+export const ENTITY_PLURAL_NAME = "Maintenances";
+export const INITIAL_FORM_VALUES = {
+  name: "",
+  id: "",
+  month: "",
+  amount: 0,
+};
+export const FORM_FIELDS: IFormConfig[] = [
+  {
+    type: "text",
+    id: "name",
+    name: "name",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "Maintenance Name",
+    required: true,
+  },
+  {
+    type: "month",
+    id: "month",
+    name: "month",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "Maintenance Month",
+    required: true,
+  },
+  {
+    type: "number",
+    id: "amount",
+    name: "amount",
+    defaultValue: null,
+    dataProvider: () => [],
+    label: "Amount in ₹",
+    required: true,
+  },
+];
+
+export const DELETE_DIALOG_CONFIG = {
+  title: "Delete Confirmation",
+  messagePrefix: "Are you sure! Do you want to Delete ",
+  messageSuffix: "?",
+  yesLabel: "Yes",
+  noLabel: "No",
+  successMessagePrefix: " ",
+  successMessageSuffix: " deleted successfully ",
+  okLabel: "OK",
+};
+
+export const EDIT_DIALOG_CONFIG = {
+  titlePrefix: "Update ",
+  emptyMessage: "",
+};
+
+export const ADD_DIALOG_CONFIG = {
+  titlePrefix: "Add ",
+  emptyMessage: "",
+};

@@ -36,6 +36,11 @@ export const FORM_FIELDS: IFormConfig[] = [
   },
 ];
 export const INITIAL_FORM_VALUES = { name: "" };
+export const DELETE_CONFIRMATION_TITLE = "Delete Confirmation";
+export const DELETE_CONFIRMATION_MESSAGE = `Are you sure! Do you want to Delete ${ENTITY_NAME}?`;
+export const DELETE_SUCCESS_MESSAGE = `${ENTITY_NAME} deleted successfully`;
+export const ADD_NEW_TITLE = `Add New ${ENTITY_NAME}`;
+export const UPDATE_TITLE_PREFIX = `Update `;
 
 @Injectable({
   providedIn: "root",
@@ -43,11 +48,76 @@ export const INITIAL_FORM_VALUES = { name: "" };
 export class FlatsService extends FirestoreBase<IItem> {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
+
   constructor() {
     super({
       collectionName: COLLECTION_NAME,
       orderByField: ORDER_BY_FIELD,
       idField: ID_FIELD,
+    });
+  }
+
+  private openDialog(
+    component: any,
+    data: IAddOrEditDialogData | IConfirmationData
+  ): MatDialogRef<any> {
+    return this.dialog.open(component, { data });
+  }
+
+  private handleDelete(item: IItem): void {
+    const dialogRef = this.openDialog(ConfirmationDialogComponent, {
+      title: DELETE_CONFIRMATION_TITLE,
+      message: DELETE_CONFIRMATION_MESSAGE,
+      yesLabel: "Yes",
+      noLabel: "No",
+      notButtonClick: (): void => {
+        dialogRef.close();
+      },
+      yesButtonClick: (): void => {
+        this.remove(item.id || "");
+        dialogRef.close();
+        this.snackBar.open(DELETE_SUCCESS_MESSAGE, "OK");
+      },
+    });
+  }
+
+  private handleEdit(item: IItem): void {
+    const dialogRef = this.openDialog(AddOrEditDialogComponent, {
+      title: `${UPDATE_TITLE_PREFIX}${ENTITY_NAME}`,
+      message: "",
+      isEdit: true,
+      formConfig: FORM_FIELDS,
+      defaultValues: item as any,
+      yesClick: async (newForm: NgForm, addNew?: boolean) => {
+        if (!addNew) {
+          if (newForm.valid && newForm.value.name.trim().length > 0) {
+            this.update(newForm.value, item.id || "");
+            newForm.resetForm({});
+            dialogRef.close();
+          }
+        }
+      },
+      onFormChange: (form: NgForm, valueChanged: string): void => {},
+    });
+  }
+
+  private handleAdd(): void {
+    const dialogRef = this.openDialog(AddOrEditDialogComponent, {
+      title: ADD_NEW_TITLE,
+      message: "",
+      isEdit: true,
+      formConfig: FORM_FIELDS,
+      defaultValues: INITIAL_FORM_VALUES,
+      yesClick: async (newForm: NgForm, addNew?: boolean) => {
+        if (!addNew) {
+          if (newForm.valid && newForm.value.name.trim().length > 0) {
+            this.add(newForm.value);
+            newForm.resetForm({});
+            dialogRef.close();
+          }
+        }
+      },
+      onFormChange: (form: NgForm, valueChanged: string): void => {},
     });
   }
 
@@ -68,84 +138,18 @@ export class FlatsService extends FirestoreBase<IItem> {
           {
             icon: "delete",
             name: "Delete",
-            disabled: (item: any): boolean => {
-              return false;
-            },
-            callBack: (item: IItem): void => {
-              let dialogRef: MatDialogRef<ConfirmationDialogComponent>;
-              const data: IConfirmationData = {
-                title: "Delete Confirmation",
-                message: `Are you sure! Do you want to Delete ${ENTITY_NAME}?`,
-                yesLabel: "Yes",
-                noLabel: "No",
-                notButtonClick: (): void => {
-                  dialogRef.close();
-                },
-                yesButtonClick: (): void => {
-                  this.remove(item.id || "");
-                  dialogRef.close();
-                  this.snackBar.open(
-                    ` ${ENTITY_NAME} deleted successfully `,
-                    "OK"
-                  );
-                },
-              };
-              dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-                data,
-              });
-            },
+            disabled: (item: any): boolean => false,
+            callBack: (item: IItem): void => this.handleDelete(item),
           },
           {
             icon: "edit",
             name: "Edit",
-            disabled: (item: any): boolean => {
-              return false;
-            },
-            callBack: (item: IItem): void => {
-              let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
-              const data: IAddOrEditDialogData = {
-                title: "Update " + ENTITY_NAME,
-                message: "",
-                isEdit: true,
-                formConfig: FORM_FIELDS,
-                defaultValues: item as any,
-                yesClick: async (newForm: NgForm, addNew?: boolean) => {
-                  if (!addNew) {
-                    if (newForm.valid && newForm.value.name.trim().length > 0) {
-                      this.update(newForm.value, item.id || "");
-                      newForm.resetForm({});
-                      dialogRef.close();
-                    }
-                  }
-                },
-                onFormChange: (form: NgForm, valueChanged: string): void => {},
-              };
-              dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
-            },
+            disabled: (item: any): boolean => false,
+            callBack: (item: IItem): void => this.handleEdit(item),
           },
         ],
       },
-      () => {
-        let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
-        const data: IAddOrEditDialogData = {
-          title: "Add New " + ENTITY_NAME,
-          message: "",
-          isEdit: true,
-          formConfig: FORM_FIELDS,
-          defaultValues: INITIAL_FORM_VALUES,
-          yesClick: async (newForm: NgForm, addNew?: boolean) => {
-            if (!addNew) {
-              if (newForm.valid && newForm.value.name.trim().length > 0) {
-                this.add(newForm.value);
-                newForm.resetForm({});
-                dialogRef.close();
-              }
-            }
-          },
-          onFormChange: (form: NgForm, valueChanged: string): void => {},
-        };
-        dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
-      },
+      () => this.handleAdd(),
       {
         add: this.add.bind(this),
         update: this.update.bind(this),
