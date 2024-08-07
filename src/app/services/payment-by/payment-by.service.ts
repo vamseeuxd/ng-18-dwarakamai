@@ -63,7 +63,7 @@ export class PaymentByService extends FirestoreBase<IItem> {
               let dialogRef: MatDialogRef<ConfirmationDialogComponent>;
               const data: IConfirmationData = {
                 title: "Delete Confirmation",
-                message: `Are you sure! Do you want to Delete ${item.name}?`,
+                message: `Are you sure! Do you want to Delete ${ENTITY_NAME}?`,
                 yesLabel: "Yes",
                 noLabel: "No",
                 notButtonClick: (): void => {
@@ -73,7 +73,7 @@ export class PaymentByService extends FirestoreBase<IItem> {
                   this.remove(item.id || "");
                   dialogRef.close();
                   this.snackBar.open(
-                    ` ${item.name} deleted successfully `,
+                    ` ${ENTITY_NAME} deleted successfully `,
                     "OK"
                   );
                 },
@@ -109,7 +109,6 @@ export class PaymentByService extends FirestoreBase<IItem> {
                 onFormChange: (form: NgForm, valueChanged: string): void => {},
               };
               dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
-              console.log(item);
             },
           },
         ],

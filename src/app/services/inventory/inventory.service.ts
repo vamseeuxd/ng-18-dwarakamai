@@ -199,7 +199,6 @@ export class InventoryService extends FirestoreBase<IInventoryItem> {
                 onFormChange: (form: NgForm, valueChanged: string): void => {},
               };
               dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
-              console.log(item);
             },
           },
         ],

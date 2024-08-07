@@ -207,14 +207,12 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
                 onFormChange: (form: NgForm, valueChanged: string): void => {},
               };
               dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
-              console.log(item);
             },
           },
         ],
       },
       {
         /* add: async (item: IIncome) => {
-          console.log(item);
           const { id, ...itemWithoutId } = item;
           itemWithoutId.flats = itemWithoutId.flats.filter((x) => !!x);
           const collectionRef = collection(this.firestore, COLLECTION_NAME);

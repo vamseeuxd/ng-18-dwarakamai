@@ -204,7 +204,6 @@ export class VehiclesService extends FirestoreBase<IVehicle> {
                 onFormChange: (form: NgForm, valueChanged: string): void => {},
               };
               dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
-              console.log(item);
             },
           },
         ],
