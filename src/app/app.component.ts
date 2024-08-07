@@ -48,12 +48,12 @@ import {
 } from "@angular/fire/auth";
 import { combineLatest, map, Observable, Subject, takeUntil } from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { InventoryStatusService } from "./inventory-status/inventory-status.service";
 import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.service";
 import { PaymentsService } from "./services/Payments/payments.service";
 import { DatePickerComponent } from "./shared/date-picker/date-picker.component";
 import { AddOrEditDialogComponent } from "./shared/add-or-edit-dialog/add-or-edit-dialog.component";
 import { PaymentByService } from "./services/payment-by/payment-by.service";
+import { InventoryStatusService } from "./services/inventory-status/inventory-status.service";
 
 @Component({
   selector: "app-component",
