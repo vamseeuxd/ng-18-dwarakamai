@@ -4,7 +4,6 @@ import {
   CollectionReference,
   collection,
   collectionData,
-  DocumentData,
   addDoc,
   doc,
   updateDoc,
@@ -51,7 +50,7 @@ export class FirestoreBase<T extends IItem> {
     const docRef = doc(
       this.firestore,
       `${this.collection.path}/${id}`
-    ) as any as DocumentReference<T>;
+    ) as DocumentReference<T>;
     await updateDoc(docRef, { ...item as any });
   }
 
@@ -59,7 +58,7 @@ export class FirestoreBase<T extends IItem> {
     const docRef = doc(
       this.firestore,
       `${this.collection.path}/${id}`
-    ) as any as DocumentReference<T>;
+    ) as DocumentReference<T>;
     await deleteDoc(docRef);
   }
 
@@ -67,7 +66,7 @@ export class FirestoreBase<T extends IItem> {
     const docRef = doc(
       this.firestore,
       `${this.collection.path}/${id}`
-    ) as any as DocumentReference<T>;
-    await getDoc(docRef);
+    ) as DocumentReference<T>;
+    return (await getDoc(docRef)).data();
   }
 }
