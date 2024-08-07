@@ -82,9 +82,8 @@
           #auto="matAutocomplete"
           [displayWith]="displayFn(config.dataProvider(formRef))"
         >
-          @for (option of config.dataProvider(formRef) | filterBy: ['name']:
-          formRef.value[config.name] ; track option) {
-          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+          @for (option of config.dataProvider(formRef) | filterBy: ['name']: formRef.value[config.name] ; track option) {
+            <mat-option [value]="option.id">{{ option.name }}</mat-option>
           }
         </mat-autocomplete>
       </mat-form-field>

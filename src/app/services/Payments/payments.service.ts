@@ -94,8 +94,9 @@ export class PaymentsService extends FirestoreBase<IPayment> {
       ),
       this.flatsService.items$,
     ]).pipe(
-      map(([{ maintenancesRef, payments }, flats]) =>
-        maintenancesRef
+      map(([{ maintenancesRef, payments }, flats]) => {
+        console.log(payments);
+        return maintenancesRef
           ? flats.map((flat) => ({
               flatId: flat.id || "",
               paid: payments.map((p: any) => p.flatId).includes(flat.id),
@@ -104,12 +105,14 @@ export class PaymentsService extends FirestoreBase<IPayment> {
               id:
                 payments.find((p: any) => p.flatId == flat.id)?.id ||
                 `${flat.id}---${maintenancesRef.id}`,
-              paymentDate: "",
+              paymentDate:
+                (payments.find((p: any) => p.flatId == flat.id) as any)
+                  ?.paymentDate || "",
               maintenanceId: maintenancesRef.id || "",
               name: "",
             }))
-          : []
-      )
+          : [];
+      })
     );
   }
 
@@ -132,7 +135,12 @@ export class PaymentsService extends FirestoreBase<IPayment> {
     return collectionData<IIncome>(queryRef, { idField: "id" });
   }
 
-  getPage(payments: IPayment[], incomes: IIncome[], flats: IItem[]) {
+  getPage(
+    payments: IPayment[],
+    incomes: IIncome[],
+    flats: IItem[],
+    paymentsBy: IItem[]
+  ) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
@@ -151,7 +159,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
             name: "Mark as Paid",
             disabled: (item: any) => !!item.paid,
             callBack: (item: any): void =>
-              this.markAsPaid(item, flats, incomes),
+              this.markAsPaid(item, flats, incomes, paymentsBy),
           },
           {
             disabled: (item: any) => !item.paid,
@@ -173,6 +181,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
   }
 
   private generatePaymentHTML(item: IPayment, flats: IItem[]): string {
+    // return `<pre>${JSON.stringify(item,null,2)}</pre>`
     return `
       <div class="position-relative">
         <div class="row">
@@ -186,7 +195,11 @@ export class PaymentsService extends FirestoreBase<IPayment> {
                 ? '<span class="badge rounded-pill text-bg-success fw-normal">Paid</span>'
                 : '<span class="badge rounded-pill text-bg-danger fw-normal">Not Paid</span>'
             }
-            <span class="badge rounded-pill text-bg-warning fw-normal">Paid on : N/A</span>
+            <span class="badge rounded-pill text-bg-warning fw-normal">Paid on : ${
+              item.paymentDate
+                ? moment(item.paymentDate, "YYYY-MM-DD").format("DD-MMM-YYYY")
+                : "N/A"
+            }</span>
           </div>
         </div>
         <span class="position-absolute top-0 end-0 me-4 mt-3 d-inline-block text-success">${new Intl.NumberFormat(
@@ -225,7 +238,12 @@ export class PaymentsService extends FirestoreBase<IPayment> {
       data,
     });
   }
-  private markAsPaid(item: any, flats: IItem[], incomes: IIncome[]) {
+  private markAsPaid(
+    item: any,
+    flats: IItem[],
+    incomes: IIncome[],
+    paymentsBy: IItem[]
+  ) {
     let dialogRef: MatDialogRef<AddOrEditDialogComponent>;
     const data: IAddOrEditDialogData = {
       title: "Update Payment Details",
@@ -260,6 +278,17 @@ export class PaymentsService extends FirestoreBase<IPayment> {
           dataProvider: (form: NgForm): IItem[] => incomes,
         },
         {
+          type: "dropdown",
+          id: "paymentBy",
+          name: "paymentBy",
+          label: "Payment By",
+          required: true,
+          defaultValue: item.paymentBy,
+          dataProvider: (form: NgForm): IItem[] => {
+            return paymentsBy;
+          },
+        },
+        {
           type: "text",
           id: "amount",
           name: "amount",
@@ -274,6 +303,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
         paymentDate: moment().format("YYYY-MM-DD"),
         maintenanceId: item.maintenanceId,
         amount: item.amount,
+        paymentBy: item.paymentBy,
       },
       yesClick: async (newForm: NgForm, addNew?: boolean) => {
         const sub = this.getPaymentsBYMaintenanceId(

@@ -8,11 +8,11 @@ import { ConfirmationDialogComponent, IConfirmationData } from "src/app/shared/c
 import { MatSnackBar } from "@angular/material/snack-bar";
 
 // constants.ts
-export const COLLECTION_NAME = "floors";
+export const COLLECTION_NAME = "paymentBy";
 export const ID_FIELD: keyof IItem = "id";
 export const ORDER_BY_FIELD: keyof IItem = "name";
-export const ENTITY_NAME = "Floor";
-export const ENTITY_PLURAL_NAME = "Floors";
+export const ENTITY_NAME = "Payment By";
+export const ENTITY_PLURAL_NAME = "Payments By";
 export const FORM_FIELDS: IFormConfig[] = [
   {
     type: "text",
@@ -20,7 +20,7 @@ export const FORM_FIELDS: IFormConfig[] = [
     name: "name",
     defaultValue: "",
     dataProvider: () => [],
-    label: "New Floor Name",
+    label: "Payment By Name",
     required: true,
   },
 ];
@@ -28,7 +28,7 @@ export const INITIAL_FORM_VALUES = { name: "" };
 @Injectable({
   providedIn: "root",
 })
-export class FloorsService extends FirestoreBase<IItem> {
+export class PaymentByService extends FirestoreBase<IItem> {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
   constructor() {
@@ -39,12 +39,12 @@ export class FloorsService extends FirestoreBase<IItem> {
     });
   }
 
-  getPage(floors: IItem[]) {
+  getPage(items: IItem[]) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
       ENTITY_PLURAL_NAME,
-      floors,
+      items,
       FORM_FIELDS,
       INITIAL_FORM_VALUES,
       (item) => item.name,

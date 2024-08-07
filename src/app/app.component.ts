@@ -53,6 +53,7 @@ import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.servi
 import { PaymentsService } from "./services/Payments/payments.service";
 import { DatePickerComponent } from "./shared/date-picker/date-picker.component";
 import { AddOrEditDialogComponent } from "./shared/add-or-edit-dialog/add-or-edit-dialog.component";
+import { PaymentByService } from "./services/payment-by/payment-by.service";
 
 @Component({
   selector: "app-component",
@@ -96,6 +97,7 @@ export class AppComponent implements OnDestroy {
   readonly vehiclesService = inject(VehiclesService);
   readonly maintenanceService = inject(MaintenanceService);
   readonly paymentsService = inject(PaymentsService);
+  readonly paymentByService = inject(PaymentByService);
   readonly breakpointObserver = inject(BreakpointObserver);
   getItemNameById = getItemNameById;
 
@@ -121,6 +123,7 @@ export class AppComponent implements OnDestroy {
     this.maintenanceService.items$,
     this.inventoryStatusService.items$,
     this.paymentsService.items$,
+    this.paymentByService.items$,
   ]).pipe(
     map(
       ([
@@ -134,6 +137,7 @@ export class AppComponent implements OnDestroy {
         maintenances,
         inventoryItemStatus,
         payments,
+        paymentsBy,
       ]) => {
         return [
           this.flatsService.getPage(flats),
@@ -145,7 +149,8 @@ export class AppComponent implements OnDestroy {
           this.vehiclesService.getPage(flats, vehicles, vehicleTypes),
           this.maintenanceService.getPage(flats, maintenances),
           this.inventoryStatusService.getPage(inventoryItemStatus),
-          this.paymentsService.getPage(payments, maintenances, flats),
+          this.paymentsService.getPage(payments, maintenances, flats, paymentsBy),
+          this.paymentByService.getPage(paymentsBy),
         ];
       }
     )
