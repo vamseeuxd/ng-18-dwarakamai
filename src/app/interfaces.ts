@@ -81,6 +81,7 @@ export interface IFormConfig {
     | "dropdown"
     | "number"
     | "month"
+    | "tel"
     | "multi-select"
     | "date"
     | "hidden";
