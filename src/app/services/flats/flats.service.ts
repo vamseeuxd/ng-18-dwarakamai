@@ -1,10 +1,11 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import {
-  getItemNameById,
   getPage,
+  IAllCollection,
   IFormConfig,
   IItem,
+  IPageService,
 } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
@@ -45,7 +46,7 @@ export const UPDATE_TITLE_PREFIX = `Update `;
 @Injectable({
   providedIn: "root",
 })
-export class FlatsService extends FirestoreBase<IItem> {
+export class FlatsService extends FirestoreBase<IItem> implements IPageService {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
 
@@ -121,7 +122,7 @@ export class FlatsService extends FirestoreBase<IItem> {
     });
   }
 
-  getPage(flats: IItem[]) {
+  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,

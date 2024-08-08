@@ -28,7 +28,7 @@ import {
   MatDialogContent,
   MatDialogTitle,
 } from "@angular/material/dialog";
-import { IItem, IPage, IDefaultValues, getItemNameById } from "./interfaces";
+import { IItem, IPage, IDefaultValues, getItemNameById, IAllCollection } from "./interfaces";
 import { FlatsService } from "./services/flats/flats.service";
 import { FloorsService } from "./services/floors/floors.service";
 import { VendorsService } from "./services/vendors/vendors.service";
@@ -81,8 +81,8 @@ import { InventoryStatusService } from "./services/inventory-status/inventory-st
     MatSelectModule,
     AddOrEditDialogComponent,
     CdkDrag,
-    DatePickerComponent
-],
+    DatePickerComponent,
+  ],
 })
 export class AppComponent implements OnDestroy {
   auth: Auth = inject(Auth);
@@ -139,18 +139,32 @@ export class AppComponent implements OnDestroy {
         payments,
         paymentsBy,
       ]) => {
+        const allCollection: IAllCollection = {
+          flats,
+          floors,
+          vendors,
+          expenses,
+          inventory,
+          vehicleTypes,
+          vehicles,
+          maintenances,
+          inventoryItemStatus,
+          payments,
+          paymentsBy,
+        };
+
         return [
-          this.flatsService.getPage(flats),
-          this.floorsService.getPage(floors),
-          this.vendorsService.getPage(vendors),
-          this.expensesService.getPage(floors, inventory, vendors, expenses),
-          this.inventoryService.getPage(floors, inventoryItemStatus, inventory),
-          this.vehicleTypesService.getPage(vehicleTypes),
-          this.vehiclesService.getPage(flats, vehicles, vehicleTypes),
-          this.maintenanceService.getPage(flats, maintenances),
-          this.inventoryStatusService.getPage(inventoryItemStatus),
-          this.paymentsService.getPage(payments, maintenances, flats, paymentsBy),
-          this.paymentByService.getPage(paymentsBy),
+          this.flatsService.getPage(allCollection),
+          this.floorsService.getPage(allCollection),
+          this.vendorsService.getPage(allCollection),
+          this.expensesService.getPage(allCollection),
+          this.inventoryService.getPage(allCollection),
+          this.vehicleTypesService.getPage(allCollection),
+          this.vehiclesService.getPage(allCollection),
+          this.maintenanceService.getPage(allCollection),
+          this.inventoryStatusService.getPage(allCollection),
+          this.paymentsService.getPage(allCollection),
+          this.paymentByService.getPage(allCollection),
         ];
       }
     )
@@ -164,8 +178,8 @@ export class AppComponent implements OnDestroy {
   );
 
   constructor() {
-    effect(()=>{
-      this.paymentsService.selectedMonth.next(this.selectedDate())
+    effect(() => {
+      this.paymentsService.selectedMonth.next(this.selectedDate());
     });
     effect(
       () => {
@@ -225,5 +239,4 @@ export class AppComponent implements OnDestroy {
   async logout() {
     await signOut(this.auth);
   }
-
 }

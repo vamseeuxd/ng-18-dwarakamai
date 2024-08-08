@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { getPage, IFormConfig, IItem } from "src/app/interfaces";
+import { getPage, IAllCollection, IFormConfig, IItem, IPageService } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import {
@@ -17,7 +17,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 @Injectable({
   providedIn: "root",
 })
-export class FloorsService extends FirestoreBase<IItem> {
+export class FloorsService extends FirestoreBase<IItem> implements IPageService {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
 
@@ -29,7 +29,7 @@ export class FloorsService extends FirestoreBase<IItem> {
     });
   }
 
-  getPage(floors: IItem[]) {
+  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,

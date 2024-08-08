@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { getPage, IFormConfig, IItem, IVehicle } from "src/app/interfaces";
+import { getPage, IAllCollection, IFormConfig, IItem, IPageService, IVehicle } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -17,7 +17,7 @@ import {
 @Injectable({
   providedIn: "root",
 })
-export class VehiclesService extends FirestoreBase<IVehicle> {
+export class VehiclesService extends FirestoreBase<IVehicle> implements IPageService {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
   constructor() {
@@ -28,7 +28,7 @@ export class VehiclesService extends FirestoreBase<IVehicle> {
     });
   }
 
-  getPage(flats: IItem[], vehicles: IVehicle[], vehicleTypes: IItem[]) {
+  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
     const formConfigWithProviders = FORM_CONFIG.map((config) => {
       if (config.type === "dropdown") {
         return { ...config, dataProvider: () => config.dataProvider === FORM_CONFIG[3].dataProvider ? flats : vehicleTypes };

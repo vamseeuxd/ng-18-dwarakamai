@@ -2,9 +2,11 @@ import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import {
   getPage,
+  IAllCollection,
   IFormConfig,
   IInventoryItem,
   IItem,
+  IPageService,
 } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
@@ -21,7 +23,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 @Injectable({
   providedIn: "root",
 })
-export class InventoryService extends FirestoreBase<IInventoryItem> {
+export class InventoryService extends FirestoreBase<IInventoryItem> implements IPageService {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
 
@@ -33,16 +35,12 @@ export class InventoryService extends FirestoreBase<IInventoryItem> {
     });
   }
 
-  getPage(
-    floors: IItem[],
-    inventoryItemStatus: IItem[],
-    inventoryItems: IInventoryItem[]
-  ) {
+  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
       ENTITY_PLURAL_NAME,
-      inventoryItems,
+      inventory,
       FORM_FIELDS(floors, inventoryItemStatus),
       INITIAL_FORM_VALUES,
       (item: IInventoryItem): string => {

@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { getPage, IIncome } from "src/app/interfaces";
+import { getPage, IAllCollection, IIncome, IPageService } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { PaymentsService } from "../Payments/payments.service";
 import moment from "moment";
@@ -18,7 +18,7 @@ import {
 @Injectable({
   providedIn: "root",
 })
-export class MaintenanceService extends FirestoreBase<IIncome> {
+export class MaintenanceService extends FirestoreBase<IIncome> implements IPageService {
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
   readonly paymentsService = inject(PaymentsService);
@@ -31,12 +31,12 @@ export class MaintenanceService extends FirestoreBase<IIncome> {
     });
   }
 
-  getPage(flats: IItem[], incomes: IIncome[]) {
+  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
       ENTITY_PLURAL_NAME,
-      incomes,
+      maintenances,
       FORM_FIELDS,
       INITIAL_FORM_VALUES,
       (item: IIncome): string => {

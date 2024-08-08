@@ -3,8 +3,10 @@ import { NgForm } from "@angular/forms";
 import {
   getItemNameById,
   getPage,
+  IAllCollection,
   IIncome,
   IItem,
+  IPageService,
   IPayment,
 } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
@@ -33,7 +35,7 @@ import {
 @Injectable({
   providedIn: "root",
 })
-export class PaymentsService extends FirestoreBase<IPayment> {
+export class PaymentsService extends FirestoreBase<IPayment> implements IPageService {
   readonly flatsService = inject(FlatsService);
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
@@ -106,12 +108,7 @@ export class PaymentsService extends FirestoreBase<IPayment> {
     return collectionData<IIncome>(queryRef, { idField: "id" });
   }
 
-  getPage(
-    payments: IPayment[],
-    incomes: IIncome[],
-    flats: IItem[],
-    paymentsBy: IItem[]
-  ) {
+  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
@@ -130,19 +127,19 @@ export class PaymentsService extends FirestoreBase<IPayment> {
             name: "Mark as Paid",
             disabled: (item: any) => !!item.paid,
             callBack: (item: any): void =>
-              this.markAsPaid(item, flats, incomes, paymentsBy, true),
+              this.markAsPaid(item, flats, maintenances, paymentsBy, true),
           },
           {
             disabled: (item: any) => !item.paid,
             icon: "thumb_down",
             name: "Mark as Not Paid",
             callBack: (item: any): void =>
-              this.markAsNotPaid(item, flats, incomes),
+              this.markAsNotPaid(item, flats, maintenances),
           },
         ],
       },
       (): void =>
-        this.markAsPaid(INITIAL_FORM_VALUES, flats, incomes, paymentsBy, true),
+        this.markAsPaid(INITIAL_FORM_VALUES, flats, maintenances, paymentsBy, true),
       {
         add: this.add.bind(this),
         update: this.update.bind(this),

@@ -141,3 +141,21 @@ export const getPage = (
 export const getItemNameById = (items: IItem[], id: string) => {
   return items.find((i) => i.id === id)?.name || "";
 };
+
+export interface IAllCollection {
+  flats: IItem[];
+  floors: IItem[];
+  vendors: IItem[];
+  expenses: IExpenses[];
+  inventory: IInventoryItem[];
+  vehicleTypes: IItem[];
+  vehicles: IVehicle[];
+  maintenances: IIncome[];
+  inventoryItemStatus: IItem[];
+  payments: IPayment[];
+  paymentsBy: IItem[];
+}
+
+export interface IPageService {
+  getPage(allCollection: IAllCollection): IPage;
+}
