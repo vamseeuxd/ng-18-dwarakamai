@@ -36,7 +36,10 @@ export class VendorsService extends FirestoreBase<IItem> implements IPageService
       vendors,
       FORM_FIELDS,
       INITIAL_FORM_VALUES,
-      (item) => item.name,
+      (item) => `
+        <p class="m-0 p-0"><i class="me-1 text-danger fa-solid fa-user-gear"></i> ${item.name}</p>
+        <p class="m-0 p-0"><i class="me-1 text-danger fa-solid fa-phone"></i> ${item.mobile}</p>
+      `,
       (form: NgForm, valueChanged: string): void => {},
       {
         showDeleteMenu: false,
