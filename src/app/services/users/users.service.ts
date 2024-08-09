@@ -75,9 +75,9 @@ export class UsersService extends FirestoreBase<IUser> implements IPageService {
       INITIAL_FORM_VALUES,
       (item) => {
         return `
-        <p class="m-0 p-0"> <i class="fa-solid fa-building-user me-2"></i> Full Name : ${item.name}</p>
-        <p class="m-0 p-0"> <i class="fa-solid fa-mobile-retro me-2"></i> Mobile : ${item.mobile}</p>
-        <p class="m-0 p-0"> <i class="fa-solid fa-at me-2"></i> Email : ${item.email}</p>
+        <p class="m-0 p-0"> <i class="fa-solid text-danger fa-user me-2"></i>${item.name}</p>
+        <p class="m-0 p-0"> <i class="fa-solid text-danger fa-phone me-2"></i>${item.mobile}</p>
+        <p class="m-0 p-0"> <i class="fa-solid text-danger fa-at me-2"></i>${item.email}</p>
         `;
       },
       (): void => {},

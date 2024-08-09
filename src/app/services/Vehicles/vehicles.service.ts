@@ -44,7 +44,10 @@ export class VehiclesService extends FirestoreBase<IVehicle> implements IPageSer
       formConfigWithProviders,
       INITIAL_FORM_VALUES,
       (item: IVehicle): string => {
-        return `<h6 class="mb-2 pb-2 border-bottom">${item.name}</h6>
+        return `<h6 class="mb-2 pb-2 border-bottom">
+        <i class="fa-solid ${item.type === 'Four Wheeler' ? 'fa-car' : 'fa-motorcycle'} text-danger"></i> 
+          ${item.name}
+        </h6>
         <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${item.color} color</div>
         <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${item.make}</div>
         <div class="border fs-7 d-inline-block rounded-pill px-2 me-1 mb-1">${flats.find((f) => f.id == item.flat)?.name}</div>

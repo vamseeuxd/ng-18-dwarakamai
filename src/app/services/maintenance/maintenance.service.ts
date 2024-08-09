@@ -43,20 +43,17 @@ export class MaintenanceService extends FirestoreBase<IIncome> implements IPageS
         return `
         <div class="m-0 p-0 pe-4">
           <div class="d-flex justify-content-between align-items-center">
-            <span>${moment(item.month, "YYYY-MM").format("MMMM-YYYY")}</span>
-            <span>
-              <small>
-              (<span class="text-success"> ${new Intl.NumberFormat(
-                "en-IN"
-              ).format(item.amount || 0)} ₹ </span>
-              <span class="text-secondary">* ${flats.length} Flats</span>)
-              </small>
-              <span class="text-success fw-bold">${new Intl.NumberFormat(
-                "en-IN"
-              ).format(item.amount * flats.length || 0)} ₹</span>
-            </span>
+            <span><i class="fa-solid fa-screwdriver-wrench text-danger"></i> ${moment(item.month, "YYYY-MM").format("MMM-YYYY")}</span>
+            <span class="m-0 p-0 text-muted fs-7">${item.name}</span>
           </div>
-          <small class="m-0 p-0 text-muted">${item.name}</small>
+          <div class="d-flex justify-content-between align-items-center">
+            <span>
+              <span class="text-success"> ${new Intl.NumberFormat( "en-IN" ).format(item.amount || 0)} ₹ </span> 
+              <span class="text-danger"><i class="fa-solid fa-xmark"></i></span>
+              <span class="text-primary">${flats.length} Flats</span>
+            </span>  
+            <span class="text-success fw-bold">${new Intl.NumberFormat( "en-IN" ).format(item.amount * flats.length || 0)} ₹</span>
+          </div>
         </div>`;
       },
       (form: NgForm, valueChanged: string): void => {},

@@ -161,17 +161,12 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
           <div class="col-12">
             ${
               item.paid
-                ? '<span class="badge rounded-pill text-bg-success fw-normal">Paid</span>'
-                : '<span class="badge rounded-pill text-bg-danger fw-normal">Not Paid</span>'
+                ? `<span class="text-success fw-bold"><i class="fa-regular fa-face-smile me-1"></i> Paid on : ${ item.paymentDate ? moment(item.paymentDate, "YYYY-MM-DD").format("DD-MMM-YYYY") : "N/A" }</span>`
+                : '<span class="text-danger fw-bold"><i class="fa-regular fa-face-frown me-1"></i>Not Paid</span>'
             }
-            <span class="badge rounded-pill text-bg-warning fw-normal">Paid on : ${
-              item.paymentDate
-                ? moment(item.paymentDate, "YYYY-MM-DD").format("DD-MMM-YYYY")
-                : "N/A"
-            }</span>
           </div>
         </div>
-        <span class="position-absolute top-0 end-0 me-4 mt-3 d-inline-block text-success">${new Intl.NumberFormat(
+        <span class="position-absolute top-0 end-0 me-4 mt-3 d-inline-block text-success fw-bold">${new Intl.NumberFormat(
           "en-IN"
         ).format(item.amount || 0)} ₹</span>
       </div>

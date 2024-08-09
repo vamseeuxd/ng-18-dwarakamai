@@ -48,10 +48,10 @@
         <li class="list-group-item p-3 border-0" style="background: #fef1f4">
           <ul class="list-group" style=" height: calc(100dvh - 120px); overflow-y: auto; overflow-x: hidden; " >
             @for(item of activePage()?.items; track item.id; let ind = $index){
-            <li class="list-group-item main-item d-flex justify-content-start align-items-center shadow-sm mb-2" >
+            <li class="list-group-item main-item d-flex justify-content-start align-items-center mb-2" style="background: #ffd9e1">
               <div class="col"> <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span> </div>
               @if(activePage()?.contentMenu?.showDeleteMenu || activePage()?.contentMenu?.showEditMenu || activePage()?.contentMenu?.otherMenus){
-              <div class="position-absolute top-0 end-0">
+              <div class="position-absolute" style="top: calc(50% - 20.5px); right: 10px;">
                 <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" > <mat-icon>more_vert</mat-icon> </button>
                 <mat-menu #menu="matMenu">
                   @if(activePage()?.contentMenu?.otherMenus){
