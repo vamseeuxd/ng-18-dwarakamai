@@ -130,7 +130,9 @@ export class FlatsService extends FirestoreBase<IItem> implements IPageService {
       flats,
       FORM_FIELDS,
       INITIAL_FORM_VALUES,
-      (item) => item.name,
+      (item) => `
+        <i class="fa-solid fa-person-shelter text-danger me-1"></i> ${item.name}
+      `,
       (form: NgForm, valueChanged: string): void => {},
       {
         showDeleteMenu: false,

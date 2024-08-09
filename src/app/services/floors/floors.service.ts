@@ -37,7 +37,9 @@ export class FloorsService extends FirestoreBase<IItem> implements IPageService 
       floors,
       FORM_FIELDS,
       INITIAL_FORM_VALUES,
-      (item) => item.name,
+      (item) => `
+        <i class="fa-solid fa-layer-group me-1 text-danger"></i> ${item.name}
+      `,
       (form: NgForm, valueChanged: string): void => {},
       {
         showDeleteMenu: false,
