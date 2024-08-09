@@ -26,9 +26,17 @@ import {
   MatDialogActions,
   MatDialogClose,
   MatDialogContent,
+  MatDialogRef,
   MatDialogTitle,
 } from "@angular/material/dialog";
-import { IItem, IPage, IDefaultValues, getItemNameById, IAllCollection } from "./interfaces";
+import {
+  IItem,
+  IPage,
+  IDefaultValues,
+  getItemNameById,
+  IAllCollection,
+  IUser,
+} from "./interfaces";
 import { FlatsService } from "./services/flats/flats.service";
 import { FloorsService } from "./services/floors/floors.service";
 import { VendorsService } from "./services/vendors/vendors.service";
@@ -46,7 +54,18 @@ import {
   user,
   UserCredential,
 } from "@angular/fire/auth";
-import { combineLatest, map, Observable, Subject, takeUntil } from "rxjs";
+import {
+  combineLatest,
+  lastValueFrom,
+  map,
+  Observable,
+  of,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.service";
 import { PaymentsService } from "./services/Payments/payments.service";
@@ -54,6 +73,12 @@ import { DatePickerComponent } from "./shared/date-picker/date-picker.component"
 import { AddOrEditDialogComponent } from "./shared/add-or-edit-dialog/add-or-edit-dialog.component";
 import { PaymentByService } from "./services/payment-by/payment-by.service";
 import { InventoryStatusService } from "./services/inventory-status/inventory-status.service";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import {
+  ConfirmationDialogComponent,
+  IConfirmationData,
+} from "./shared/confirmation-dialog/confirmation-dialog.component";
+import { UsersService } from "./services/users/users.service";
 
 @Component({
   selector: "app-component",
@@ -98,7 +123,9 @@ export class AppComponent implements OnDestroy {
   readonly maintenanceService = inject(MaintenanceService);
   readonly paymentsService = inject(PaymentsService);
   readonly paymentByService = inject(PaymentByService);
+  readonly usersService = inject(UsersService);
   readonly breakpointObserver = inject(BreakpointObserver);
+  readonly snackBar = inject(MatSnackBar);
   getItemNameById = getItemNameById;
 
   destroyed = new Subject<void>();
@@ -124,6 +151,7 @@ export class AppComponent implements OnDestroy {
     this.inventoryStatusService.items$,
     this.paymentsService.items$,
     this.paymentByService.items$,
+    this.usersService.items$,
   ]).pipe(
     map(
       ([
@@ -138,6 +166,7 @@ export class AppComponent implements OnDestroy {
         inventoryItemStatus,
         payments,
         paymentsBy,
+        users,
       ]) => {
         const allCollection: IAllCollection = {
           flats,
@@ -151,6 +180,7 @@ export class AppComponent implements OnDestroy {
           inventoryItemStatus,
           payments,
           paymentsBy,
+          users,
         };
 
         return [
@@ -165,13 +195,22 @@ export class AppComponent implements OnDestroy {
           this.inventoryStatusService.getPage(allCollection),
           this.paymentsService.getPage(allCollection),
           this.paymentByService.getPage(allCollection),
+          this.usersService.getPage(allCollection),
         ];
       }
     )
   );
 
   pages = toSignal<IPage[]>(this.pages$);
-  userDetails = toSignal<User | null>(user(this.auth));
+  userDetails = signal<{
+    status:
+      | "waiting-for-access"
+      | "access-provided"
+      | "waiting-for-registration";
+    user: User;
+    registration: IUser | null;
+  } | null>(null);
+
   activePage: WritableSignal<IPage | null> = signal<IPage | null>(null);
   selectedDate = signal<string>(
     `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
@@ -180,6 +219,15 @@ export class AppComponent implements OnDestroy {
   constructor() {
     effect(() => {
       this.paymentsService.selectedMonth.next(this.selectedDate());
+    });
+
+    user(this.auth).subscribe((userDetails) => {
+      if (userDetails && userDetails.email) {
+        this.checkAccess(userDetails);
+      } else {
+        this.userDetails.set(null);
+        console.log("Logged Out");
+      }
     });
     effect(
       () => {
@@ -237,6 +285,94 @@ export class AppComponent implements OnDestroy {
   }
 
   async logout() {
-    await signOut(this.auth);
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: "Logout Confirmation",
+        message: "Are you sure! Do you want to Logout?",
+        yesLabel: "Yes",
+        noLabel: "No",
+        notButtonClick: (): void => {
+          dialogRef.close();
+        },
+        yesButtonClick: async () => {
+          await signOut(this.auth);
+          dialogRef.close();
+        },
+      },
+    });
+  }
+
+  async register(form: NgForm) {
+    await this.usersService.add(form.value);
+    form.resetForm({});
+    this.snackBar.open(
+      "Your registration is complete. Please contact Apartment Management to obtain access.",
+      "OK"
+    );
+    const user = this.userDetails()?.user;
+    if (user) {
+      this.checkAccess(user);
+    }
+  }
+
+  unRegister() {
+    const data: IConfirmationData = {
+      title: "Unregister Confirmation",
+      message: `Are you sure! Do you want to Unregister?`,
+      yesLabel: "Yes",
+      noLabel: "No",
+      notButtonClick: (): void => dialogRef.close(),
+      yesButtonClick: async (): Promise<void> => {
+        const userDetails = this.userDetails();
+        if (
+          userDetails &&
+          userDetails?.registration &&
+          userDetails?.registration?.id
+        ) {
+          await this.usersService.remove(userDetails.registration.id);
+          dialogRef.close();
+          this.snackBar.open(`Unregistered successfully`, "OK");
+          const user = this.userDetails()?.user;
+          if (user) {
+            this.checkAccess(user);
+          }
+        }
+      },
+    };
+    const dialogRef: MatDialogRef<ConfirmationDialogComponent> =
+      this.dialog.open(ConfirmationDialogComponent, { data });
+  }
+
+  checkAccess(userDetails: User) {
+    if (userDetails && userDetails.email) {
+      const sub2 = this.usersService
+        .checkAccess(userDetails.email)
+        .pipe(take(1))
+        .subscribe((ud) => {
+          if (ud && ud.length > 0) {
+            if (ud[0].access === "yes") {
+              this.userDetails.set({
+                status: "access-provided",
+                user: userDetails,
+                registration: ud[0],
+              });
+            } else {
+              this.userDetails.set({
+                status: "waiting-for-access",
+                user: userDetails,
+                registration: ud[0],
+              });
+            }
+          } else {
+            this.userDetails.set({
+              status: "waiting-for-registration",
+              user: userDetails,
+              registration: null,
+            });
+          }
+          console.log(ud);
+          sub2.unsubscribe();
+        });
+    }
   }
 }

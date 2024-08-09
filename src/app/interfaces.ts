@@ -5,6 +5,12 @@ export interface IItem {
   name: string;
 }
 
+export interface IUser extends IItem {
+  email: string;
+  mobile: string;
+  access: string;
+}
+
 export interface IVehicle extends IItem {
   color: string;
   make: string;
@@ -154,6 +160,7 @@ export interface IAllCollection {
   inventoryItemStatus: IItem[];
   payments: IPayment[];
   paymentsBy: IItem[];
+  users: IUser[];
 }
 
 export interface IPageService {

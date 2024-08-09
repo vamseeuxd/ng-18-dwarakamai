@@ -5,7 +5,7 @@
   <form class="row" autocomplete="off" #formRef="ngForm">
     @for (config of data.formConfig; track config.id; let ind = $index) {
     @switch (config.type) { @case ("text") {
-    <div class="col-md-12 py-2" style="min-width: 350px">
+    <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
         <input
@@ -20,7 +20,7 @@
       </mat-form-field>
     </div>
     } @case ("number") {
-    <div class="col-md-12 py-2" style="min-width: 350px">
+    <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
         <input
@@ -35,7 +35,7 @@
       </mat-form-field>
     </div>
     } @case ("tel") {
-      <div class="col-md-12 py-2" style="min-width: 350px">
+      <div class="col-md-12 py-2">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>{{ config.label }}</mat-label>
           <input
@@ -50,7 +50,7 @@
         </mat-form-field>
       </div>
       }  @case ("date") {
-    <div class="col-md-12 py-2" style="min-width: 350px">
+    <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
         <input
@@ -65,7 +65,7 @@
       </mat-form-field>
     </div>
     } @case ("month") {
-    <div class="col-md-12 py-2" style="min-width: 350px">
+    <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
         <input
@@ -80,7 +80,7 @@
       </mat-form-field>
     </div>
     } @case ("dropdown") {
-    <div class="col-md-12 py-2" style="min-width: 350px">
+    <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
         <input
@@ -97,14 +97,15 @@
           #auto="matAutocomplete"
           [displayWith]="displayFn(config.dataProvider(formRef))"
         >
-          @for (option of config.dataProvider(formRef) | filterBy: ['name']: formRef.value[config.name] ; track option) {
+          <!-- @for (option of config.dataProvider(formRef) | filterBy: ['name']: formRef.value[config.name] ; track option.id) { -->
+          @for (option of config.dataProvider(formRef); track option.id) {
             <mat-option [value]="option.id">{{ option.name }}</mat-option>
           }
         </mat-autocomplete>
       </mat-form-field>
     </div>
     } @case ("multi-select") {
-    <div class="col-md-12 py-2" style="min-width: 350px">
+    <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
         <mat-select
