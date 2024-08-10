@@ -18,22 +18,29 @@
   }
 </ng-container>
 
-
 <!-- prettier-ignore -->
 <ng-template #mainPage>
   <mat-drawer-container autosize class="border shadow" style="background-color: #fef1f4" [hasBackdrop]="!fixedSideMenu" >
     <mat-drawer #drawer class="border shadow-sm rounded-0" [opened]="fixedSideMenu" [style.marginTop.px]="fixedSideMenu ? 65 : 0" mode="over" style="width: 220px" >
       <button mat-icon-button class="close-button" (click)="drawer.toggle()"> <mat-icon>close</mat-icon> </button>
       <ul class="list-group rounded-0">
+        <li matRipple (click)="isDashboard.set(true)" role="button" [class.active]="isDashboard()" class="list-group-item rounded-0" > Dashboard </li>
         @for(page of pages(); track page.id){
-          <li matRipple (click)="activePage.set(page)" role="button" [class.active]="activePage()?.id === page.id" class="list-group-item rounded-0" > {{ page.name }} </li>
+          <li matRipple (click)="isDashboard.set(false);activePage.set(page)" role="button" [class.active]="!isDashboard() && activePage()?.id === page.id" class="list-group-item rounded-0" > {{ page.name }} </li>
         }
       </ul>
     </mat-drawer>
 
     <mat-toolbar style="background: #ffd9e1">
       <button mat-icon-button class="open-button" (click)="drawer.toggle()"> <mat-icon>menu</mat-icon> </button>
-      <h6 class="fs-6"> Dwarakamai Vizag / {{ activePage()?.name }} </h6>
+      <h6 class="fs-6"> 
+        Dwarakamai Vizag / 
+        @if(isDashboard()){
+          Dashboard
+        }@else {
+          {{ activePage()?.name }} 
+        }
+      </h6>
       <div class="ms-auto"></div>
       @if(userDetails()){
         <button mat-icon-button class="open-button" (click)="logout()"> <mat-icon>logout</mat-icon> </button>
@@ -42,47 +49,17 @@
         <button mat-icon-button class="open-button" (click)="loginByGoogle()"> <mat-icon>login</mat-icon> </button>
       }
     </mat-toolbar>
-
     <div class="container-fluid">
-      <ul class="list-group col-md-8 offset-md-3 mt-2 position-relative">
-        <li class="list-group-item p-3 border-0" style="background: #fef1f4">
-          <ul class="list-group" style=" height: calc(100dvh - 120px); overflow-y: auto; overflow-x: hidden; " >
-            @for(item of activePage()?.items; track item.id; let ind = $index){
-            <li class="list-group-item main-item d-flex justify-content-start align-items-center mb-2" style="background: #ffd9e1">
-              <div class="col"> <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span> </div>
-              @if(activePage()?.contentMenu?.showDeleteMenu || activePage()?.contentMenu?.showEditMenu || activePage()?.contentMenu?.otherMenus){
-              <div class="position-absolute" style="top: calc(50% - 20.5px); right: 10px;">
-                <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" > <mat-icon>more_vert</mat-icon> </button>
-                <mat-menu #menu="matMenu">
-                  @if(activePage()?.contentMenu?.otherMenus){
-                    <ng-container *ngFor=" let contentMenu of activePage()?.contentMenu?.otherMenus " >
-                      <button mat-menu-item [disabled]="contentMenu.disabled(item)" (click)="contentMenu.callBack(item)" > <mat-icon>{{ contentMenu.icon }}</mat-icon> <span>{{ contentMenu.name }}</span> </button>
-                    </ng-container>
-                  }
-                </mat-menu>
-              </div>
-              }
-            </li>
-            }
-            @empty{
-              <h6 class="text-muted text-center my-3"> No {{ activePage()?.name }} to Show </h6>
-            }
-          </ul>
-        </li>
-        @if(!activePage()?.hideAdd){
-          <div class="d-inline-block position-absolute bottom-0 end-0" cdkDrag>
-            <button mat-fab (click)="activePage()?.addCallBack()"> <mat-icon>add</mat-icon> </button>
-          </div>
-        }
-        @if(activePage()?.id === 'payments'){
-          <div class="d-inline-block position-absolute bottom-0 start-0" cdkDrag>
-            <app-date-picker class="shadow-sm border" [(selectedDate)]="selectedDate" />
-          </div>
-        }
-      </ul>
+      @if(isDashboard()){
+        <app-dashboard/>
+      }
+      @else {
+        <ng-container [ngTemplateOutlet]="dynamicListRef"></ng-container>
+      }
     </div>
   </mat-drawer-container>
 </ng-template>
+
 <!-- prettier-ignore -->
 <ng-template #loginPageRef>
   <mat-drawer-container autosize class="border shadow" style="background-color: #fef1f4" [hasBackdrop]="!fixedSideMenu" >
@@ -93,6 +70,7 @@
     </div>
   </mat-drawer-container>
 </ng-template>
+
 <!-- prettier-ignore -->
 <ng-template #waitingForAccessRef>
   <mat-drawer-container autosize class="border shadow" style="background-color: #fef1f4" [hasBackdrop]="!fixedSideMenu" >
@@ -116,6 +94,7 @@
     </div>
   </mat-drawer-container>
 </ng-template>
+
 <!-- prettier-ignore -->
 <ng-template #waitingForRegistrationRef>
   <mat-drawer-container autosize class="border shadow" style="background-color: #fef1f4" [hasBackdrop]="!fixedSideMenu" >
@@ -157,4 +136,45 @@
         </form>
     </div>
   </mat-drawer-container>
+</ng-template>
+
+<!-- prettier-ignore -->
+<ng-template #dynamicListRef>
+  
+  <ul class="list-group col-md-8 offset-md-3 mt-2 position-relative">
+    <li class="list-group-item p-3 border-0" style="background: #fef1f4">
+      <ul class="list-group" style=" height: calc(100dvh - 120px); overflow-y: auto; overflow-x: hidden; " >
+        @for(item of activePage()?.items; track item.id; let ind = $index){
+        <li class="list-group-item main-item d-flex justify-content-start align-items-center mb-2" style="background: #ffd9e1">
+          <div class="col"> <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span> </div>
+          @if(activePage()?.contentMenu?.showDeleteMenu || activePage()?.contentMenu?.showEditMenu || activePage()?.contentMenu?.otherMenus){
+          <div class="position-absolute" style="top: calc(50% - 20.5px); right: 10px;">
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu" > <mat-icon>more_vert</mat-icon> </button>
+            <mat-menu #menu="matMenu">
+              @if(activePage()?.contentMenu?.otherMenus){
+                <ng-container *ngFor=" let contentMenu of activePage()?.contentMenu?.otherMenus " >
+                  <button mat-menu-item [disabled]="contentMenu.disabled(item)" (click)="contentMenu.callBack(item)" > <mat-icon>{{ contentMenu.icon }}</mat-icon> <span>{{ contentMenu.name }}</span> </button>
+                </ng-container>
+              }
+            </mat-menu>
+          </div>
+          }
+        </li>
+        }
+        @empty{
+          <h6 class="text-muted text-center my-3"> No {{ activePage()?.name }} to Show </h6>
+        }
+      </ul>
+    </li>
+    @if(!activePage()?.hideAdd){
+      <div class="d-inline-block position-absolute bottom-0 end-0" cdkDrag>
+        <button mat-fab (click)="activePage()?.addCallBack()"> <mat-icon>add</mat-icon> </button>
+      </div>
+    }
+    @if(activePage()?.id === 'payments'){
+      <div class="d-inline-block position-absolute bottom-0 start-0" cdkDrag>
+        <app-date-picker class="shadow-sm border" [(selectedDate)]="selectedDate" />
+      </div>
+    }
+  </ul>
 </ng-template>

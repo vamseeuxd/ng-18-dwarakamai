@@ -79,6 +79,7 @@ import {
   IConfirmationData,
 } from "./shared/confirmation-dialog/confirmation-dialog.component";
 import { UsersService } from "./services/users/users.service";
+import { DashboardComponent } from "./shared/dashboard/dashboard.component";
 
 @Component({
   selector: "app-component",
@@ -104,6 +105,7 @@ import { UsersService } from "./services/users/users.service";
     NgPipesModule,
     MatMenuModule,
     MatSelectModule,
+    DashboardComponent,
     AddOrEditDialogComponent,
     CdkDrag,
     DatePickerComponent,
@@ -200,6 +202,8 @@ export class AppComponent implements OnDestroy {
       }
     )
   );
+
+  isDashboard = signal(true);
 
   pages = toSignal<IPage[]>(this.pages$);
   userDetails = signal<{
