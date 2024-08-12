@@ -4,7 +4,7 @@ import {
   getItemNameById,
   getPage,
   IAllCollection,
-  IIncome,
+  IMaintenance,
   IItem,
   IPageService,
   IPayment,
@@ -94,8 +94,8 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
     const queryRef = query(
       collectionRef,
       where("month", "==", moment(month, "YYYY-MM").format("YYYY-MM"))
-    ) as Query<IIncome>;
-    return collectionData<IIncome>(queryRef, { idField: "id" });
+    ) as Query<IMaintenance>;
+    return collectionData<IMaintenance>(queryRef, { idField: "id" });
   }
 
   getPaymentsBYMaintenanceId(maintenanceId: string, flatId = "") {
@@ -104,8 +104,8 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
     if (flatId) {
       whereQueries.push(where("flatId", "==", flatId));
     }
-    const queryRef = query(collectionRef, ...whereQueries) as Query<IIncome>;
-    return collectionData<IIncome>(queryRef, { idField: "id" });
+    const queryRef = query(collectionRef, ...whereQueries) as Query<IMaintenance>;
+    return collectionData<IMaintenance>(queryRef, { idField: "id" });
   }
 
   getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
@@ -173,7 +173,7 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
     `;
   }
 
-  private markAsNotPaid(item: any, flats: IItem[], incomes: IIncome[]) {
+  private markAsNotPaid(item: any, flats: IItem[], incomes: IMaintenance[]) {
     let dialogRef: MatDialogRef<ConfirmationDialogComponent>;
     const data: IConfirmationData = {
       title: DELETE_DIALOG_CONFIG.title,
@@ -206,7 +206,7 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
   private markAsPaid(
     item: any,
     flats: IItem[],
-    incomes: IIncome[],
+    incomes: IMaintenance[],
     paymentsBy: IItem[],
     isAdd: boolean
   ) {

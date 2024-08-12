@@ -3,7 +3,7 @@ import { NgForm } from "@angular/forms";
 import {
   getPage,
   IAllCollection,
-  IIncome,
+  IMaintenance,
   IPageService,
 } from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
@@ -24,7 +24,7 @@ import {
   providedIn: "root",
 })
 export class MaintenanceService
-  extends FirestoreBase<IIncome>
+  extends FirestoreBase<IMaintenance>
   implements IPageService
 {
   readonly dialog = inject(MatDialog);
@@ -55,8 +55,8 @@ export class MaintenanceService
     const queryRef = query(
       collectionRef,
       where("year", "==", moment(year, "YYYY").format("YYYY"))
-    ) as Query<IIncome>;
-    return collectionData<IIncome>(queryRef, { idField: "id" });
+    ) as Query<IMaintenance>;
+    return collectionData<IMaintenance>(queryRef, { idField: "id" });
   }
 
   getPage({
@@ -79,7 +79,7 @@ export class MaintenanceService
       maintenances,
       FORM_FIELDS,
       INITIAL_FORM_VALUES,
-      (item: IIncome): string => {
+      (item: IMaintenance): string => {
         return `
         <div class="m-0 p-0 pe-4">
           <div class="d-flex justify-content-between align-items-center">

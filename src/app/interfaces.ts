@@ -18,7 +18,7 @@ export interface IVehicle extends IItem {
   type: string;
 }
 
-export interface IIncome extends IItem {
+export interface IMaintenance extends IItem {
   month: string;
   year: string;
   flats: string[];
@@ -157,7 +157,7 @@ export interface IAllCollection {
   inventory: IInventoryItem[];
   vehicleTypes: IItem[];
   vehicles: IVehicle[];
-  maintenances: IIncome[];
+  maintenances: IMaintenance[];
   inventoryItemStatus: IItem[];
   payments: IPayment[];
   paymentsBy: IItem[];
