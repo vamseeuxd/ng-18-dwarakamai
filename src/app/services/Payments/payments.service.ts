@@ -173,7 +173,7 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
     `;
   }
 
-  private markAsNotPaid(item: any, flats: IItem[], incomes: IMaintenance[]) {
+  private markAsNotPaid(item: any, flats: IItem[], maintenances: IMaintenance[]) {
     let dialogRef: MatDialogRef<ConfirmationDialogComponent>;
     const data: IConfirmationData = {
       title: DELETE_DIALOG_CONFIG.title,
@@ -206,7 +206,7 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
   private markAsPaid(
     item: any,
     flats: IItem[],
-    incomes: IMaintenance[],
+    maintenances: IMaintenance[],
     paymentsBy: IItem[],
     isAdd: boolean
   ) {
@@ -219,7 +219,7 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
       isEdit: MARK_PAID_DIALOG_CONFIG.isEdit,
       formConfig: MARK_PAID_DIALOG_CONFIG.formFields(
         flats,
-        incomes,
+        maintenances,
         item,
         paymentsBy
       ),
@@ -247,7 +247,7 @@ export class PaymentsService extends FirestoreBase<IPayment> implements IPageSer
                   flats,
                   item.flatId
                 )} Payment Details added for ${getItemNameById(
-                  incomes,
+                  maintenances,
                   item.maintenanceId
                 )}`,
                 "OK"
@@ -283,7 +283,7 @@ export const ENTITY_NAME = "Payment";
 export const ENTITY_PLURAL_NAME = "Payments";
 export const INITIAL_FORM_VALUES = {
   flatId: "",
-  incomeId: "",
+  maintenanceId: "",
   paid: false,
   paymentDate: "",
   name: "",
@@ -316,7 +316,7 @@ export const MARK_PAID_DIALOG_CONFIG = {
   isEdit: false,
   formFields: (
     flats: IItem[],
-    incomes: any,
+    maintenances: any,
     item: { flatId: string; maintenanceId: any; paymentBy: any; amount: any },
     paymentsBy: any
   ): IFormConfig[] => [
@@ -345,7 +345,7 @@ export const MARK_PAID_DIALOG_CONFIG = {
       label: "Maintenance Id",
       required: true,
       defaultValue: item.maintenanceId,
-      dataProvider: () => incomes,
+      dataProvider: () => maintenances,
     },
     {
       type: "dropdown",
