@@ -86,6 +86,7 @@ export interface IPage {
 export interface IFormConfig {
   type:
     | "text"
+    | "textarea"
     | "dropdown"
     | "number"
     | "month"
@@ -95,6 +96,7 @@ export interface IFormConfig {
     | "hidden";
   id: string;
   name: string;
+  getOptionLabel?: (item: any) => string;
   label: string;
   required: boolean;
   defaultValue: string | number | null;
@@ -154,6 +156,7 @@ export interface IAllCollection {
   floors: IItem[];
   vendors: IItem[];
   expenses: IExpenses[];
+  expenseTypes: IItem[];
   inventory: IInventoryItem[];
   vehicleTypes: IItem[];
   vehicles: IVehicle[];

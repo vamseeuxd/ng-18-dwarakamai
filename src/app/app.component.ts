@@ -75,6 +75,7 @@ import { UsersService } from "./services/users/users.service";
 import { DashboardComponent } from "./shared/dashboard/dashboard.component";
 import { DashboardService } from "./services/dashboard/dashboard.service";
 import moment from "moment";
+import { ExpenseTypesService } from "./services/expenses-type/expenses-type.service";
 
 @Component({
   selector: "app-component",
@@ -113,6 +114,7 @@ export class AppComponent implements OnDestroy {
   readonly floorsService = inject(FloorsService);
   readonly vendorsService = inject(VendorsService);
   readonly expensesService = inject(ExpensesService);
+  readonly expenseTypesService = inject(ExpenseTypesService);
   readonly inventoryService = inject(InventoryService);
   readonly inventoryStatusService = inject(InventoryStatusService);
   readonly vehicleTypesService = inject(VehicleTypesService);
@@ -142,6 +144,7 @@ export class AppComponent implements OnDestroy {
     this.floorsService.items$,
     this.vendorsService.items$,
     this.expensesService.items$,
+    this.expenseTypesService.items$,
     this.inventoryService.items$,
     this.vehicleTypesService.items$,
     this.vehiclesService.items$,
@@ -157,6 +160,7 @@ export class AppComponent implements OnDestroy {
         floors,
         vendors,
         expenses,
+        expenseTypes,
         inventory,
         vehicleTypes,
         vehicles,
@@ -171,6 +175,7 @@ export class AppComponent implements OnDestroy {
           floors,
           vendors,
           expenses,
+          expenseTypes,
           inventory,
           vehicleTypes,
           vehicles,
@@ -192,6 +197,7 @@ export class AppComponent implements OnDestroy {
           this.floorsService.getPage(allCollection),
           this.vendorsService.getPage(allCollection),
           this.expensesService.getPage(allCollection),
+          this.expenseTypesService.getPage(allCollection),
           this.inventoryService.getPage(allCollection),
           this.vehicleTypesService.getPage(allCollection),
           this.vehiclesService.getPage(allCollection),

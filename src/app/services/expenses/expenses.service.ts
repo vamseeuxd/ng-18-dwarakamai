@@ -1,6 +1,13 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { getPage, IAllCollection, IExpenses, IInventoryItem, IItem, IPageService } from "src/app/interfaces";
+import {
+  getPage,
+  IAllCollection,
+  IExpenses,
+  IInventoryItem,
+  IItem,
+  IPageService,
+} from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import moment from "moment";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
@@ -31,7 +38,10 @@ export const INITIAL_FORM_VALUES = {
 @Injectable({
   providedIn: "root",
 })
-export class ExpensesService extends FirestoreBase<IExpenses> implements IPageService {
+export class ExpensesService
+  extends FirestoreBase<IExpenses>
+  implements IPageService
+{
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
   constructor() {
@@ -42,7 +52,20 @@ export class ExpensesService extends FirestoreBase<IExpenses> implements IPageSe
     });
   }
 
-  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
+  getPage({
+    flats,
+    floors,
+    vendors,
+    expenses,
+    expenseTypes,
+    inventory,
+    vehicleTypes,
+    vehicles,
+    maintenances,
+    inventoryItemStatus,
+    payments,
+    paymentsBy,
+  }: IAllCollection) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
@@ -76,6 +99,25 @@ export class ExpensesService extends FirestoreBase<IExpenses> implements IPageSe
             return inventory.filter((i) => i.floor == form.value.floor);
           },
           label: "Inventory Item",
+          required: true,
+        },
+        {
+          type: "dropdown",
+          id: "expenseType",
+          name: "expenseType",
+          getOptionLabel: (item) => {
+            return `
+            <div>
+              <p class="m-0 p-0">${item.name}</p>
+              <p class="m-0 p-0 text-secondary fs-8">${item.description.split('\n').join(', ')}</p>
+            </div>
+            `;
+          },
+          defaultValue: "",
+          dataProvider: (form: NgForm) => {
+            return expenseTypes;
+          },
+          label: "Expense Type",
           required: true,
         },
         {
@@ -211,6 +253,25 @@ export class ExpensesService extends FirestoreBase<IExpenses> implements IPageSe
                     required: true,
                   },
                   {
+                    type: "dropdown",
+                    id: "expenseType",
+                    name: "expenseType",
+                    getOptionLabel: (item) => {
+                      return `
+                      <div>
+                        <p class="m-0 p-0">${item.name}</p>
+                        <p class="m-0 p-0 text-secondary fs-8">${item.description.split('\n').join(', ')}</p>
+                      </div>
+                      `;
+                    },
+                    defaultValue: "",
+                    dataProvider: (form: NgForm) => {
+                      return expenseTypes;
+                    },
+                    label: "Expense Type",
+                    required: true,
+                  },
+                  {
                     type: "number",
                     id: "amount",
                     name: "amount",
@@ -298,6 +359,25 @@ export class ExpensesService extends FirestoreBase<IExpenses> implements IPageSe
                 return inventory.filter((i) => i.floor == form.value.floor);
               },
               label: "Inventory Item",
+              required: true,
+            },
+            {
+              type: "dropdown",
+              id: "expenseType",
+              name: "expenseType",
+              getOptionLabel: (item) => {
+                return `
+                <div>
+                  <p class="m-0 p-0">${item.name}</p>
+                  <p class="m-0 p-0 text-secondary fs-8">${item.description.split('\n').join(', ')}</p>
+                </div>
+                `;
+              },
+              defaultValue: "",
+              dataProvider: (form: NgForm) => {
+                return expenseTypes;
+              },
+              label: "Expense Type",
               required: true,
             },
             {

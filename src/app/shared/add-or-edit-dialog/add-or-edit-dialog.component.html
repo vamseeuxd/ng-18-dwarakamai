@@ -27,6 +27,21 @@
         />
       </mat-form-field>
     </div>
+    }@case ("textarea") {
+    <div class="col-md-12 py-2">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <textarea
+          [name]="config.name"
+          cdkFocusInitial
+          (input)="data.onFormChange(formRef, config.name)"
+          (keyup.enter)="data.yesClick(formRef)"
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+          matInput
+        ></textarea>
+      </mat-form-field>
+    </div>
     } @case ("number") {
     <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
@@ -107,7 +122,15 @@
         >
           <!-- @for (option of config.dataProvider(formRef) | filterBy: ['name']: formRef.value[config.name] ; track option.id) { -->
           @for (option of config.dataProvider(formRef); track option.id) {
-          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+          <mat-option [value]="option.id" style="line-height: 1;">
+            <span>
+              @if (!!config.getOptionLabel) {
+              <div [innerHTML]="config.getOptionLabel(option)"></div>
+              }@else {
+              {{ option.name }}
+              }
+            </span>
+          </mat-option>
           }
         </mat-autocomplete>
       </mat-form-field>
@@ -151,13 +174,21 @@
             >Select All</mat-option
           >
           @for (option of config.dataProvider(formRef); track option) {
-          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+          <mat-option [value]="option.id" style="line-height: 1;">
+            <span>
+              @if (!!config.getOptionLabel) {
+              <div [innerHTML]="config.getOptionLabel(option)"></div>
+              }@else {
+              {{ option.name }}
+              }
+            </span>
+          </mat-option>
           }
         </mat-select>
       </mat-form-field>
     </div>
     } } }
-    <pre>{{ formRef.value | json }}</pre>
+    <!-- <pre>{{ formRef.value | json }}</pre> -->
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

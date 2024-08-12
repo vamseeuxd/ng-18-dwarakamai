@@ -15,6 +15,7 @@ export class DashboardService {
     floors: [],
     vendors: [],
     expenses: [],
+    expenseTypes: [],
     inventory: [],
     vehicleTypes: [],
     vehicles: [],
