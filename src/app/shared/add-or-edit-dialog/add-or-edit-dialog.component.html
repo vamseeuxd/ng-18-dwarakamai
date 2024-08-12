@@ -1,10 +1,18 @@
 <h2 mat-dialog-title>
-    <span [innerHTML]="data.title"></span>
+  <span [innerHTML]="data.title"></span>
 </h2>
 <mat-dialog-content class="mat-typography">
   <form class="row" autocomplete="off" #formRef="ngForm">
     @for (config of data.formConfig; track config.id; let ind = $index) {
-    @switch (config.type) { @case ("text") {
+    @switch (config.type) { @case ("hidden") {
+    <input
+      [name]="config.name"
+      (input)="data.onFormChange(formRef, config.name)"
+      [ngModel]="data.defaultValues[config.name]"
+      [required]="config.required"
+      type="hidden"
+    />
+    } @case ("text") {
     <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
@@ -35,21 +43,21 @@
       </mat-form-field>
     </div>
     } @case ("tel") {
-      <div class="col-md-12 py-2">
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>{{ config.label }}</mat-label>
-          <input
-            [name]="config.name"
-            (input)="data.onFormChange(formRef, config.name)"
-            type="tel"
-            (keyup.enter)="data.yesClick(formRef)"
-            [ngModel]="data.defaultValues[config.name]"
-            [required]="config.required"
-            matInput
-          />
-        </mat-form-field>
-      </div>
-      }  @case ("date") {
+    <div class="col-md-12 py-2">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ config.label }}</mat-label>
+        <input
+          [name]="config.name"
+          (input)="data.onFormChange(formRef, config.name)"
+          type="tel"
+          (keyup.enter)="data.yesClick(formRef)"
+          [ngModel]="data.defaultValues[config.name]"
+          [required]="config.required"
+          matInput
+        />
+      </mat-form-field>
+    </div>
+    } @case ("date") {
     <div class="col-md-12 py-2">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ config.label }}</mat-label>
@@ -99,7 +107,7 @@
         >
           <!-- @for (option of config.dataProvider(formRef) | filterBy: ['name']: formRef.value[config.name] ; track option.id) { -->
           @for (option of config.dataProvider(formRef); track option.id) {
-            <mat-option [value]="option.id">{{ option.name }}</mat-option>
+          <mat-option [value]="option.id">{{ option.name }}</mat-option>
           }
         </mat-autocomplete>
       </mat-form-field>
@@ -149,14 +157,25 @@
       </mat-form-field>
     </div>
     } } }
-    <!-- <pre>{{formRef.value|json}}</pre> -->
+    <pre>{{ formRef.value | json }}</pre>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-button [disabled]="formRef.invalid" (click)="data.yesClick(formRef, false)" > Save </button>
+  <button
+    mat-button
+    [disabled]="formRef.invalid"
+    (click)="data.yesClick(formRef, false)"
+  >
+    Save
+  </button>
   @if (!data.isEdit) {
-  <button mat-button [disabled]="formRef.invalid" (click)="data.yesClick(formRef, true)" > Save & Add New </button>
+  <button
+    mat-button
+    [disabled]="formRef.invalid"
+    (click)="data.yesClick(formRef, true)"
+  >
+    Save & Add New
+  </button>
   }
 </mat-dialog-actions>
- 

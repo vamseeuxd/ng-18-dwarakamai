@@ -2,6 +2,9 @@
   display: flex;
   position: relative;
   width: 100px;
+  &.is-year-only {
+    width: 50px;
+  }
   * {
     text-align: center;
     display: flex;
@@ -53,32 +56,4 @@
     height: 100%;
     opacity: 0;
   }
-  /* &:before {
-    display: block;
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 15px;
-    content: "";
-    background: rgba(0, 0, 0, 0.1);
-    pointer-events: none;
-    z-index: 1;
-    transform-origin: 0 0;
-    transform: skewX(45deg);
-  }
-  &:after {
-    display: block;
-    position: absolute;
-    top: 50px;
-    left: 0;
-    width: 100%;
-    height: 20px;
-    content: "";
-    background: rgba(0, 0, 0, 0.1);
-    pointer-events: none;
-    z-index: 1;
-    transform-origin: 0 0;
-    transform: skewX(45deg);
-  } */
 }

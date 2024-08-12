@@ -4,7 +4,6 @@ import {
   inject,
   OnDestroy,
   signal,
-  TemplateRef,
   WritableSignal,
 } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
@@ -20,7 +19,7 @@ import { CdkDrag } from "@angular/cdk/drag-drop";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { NgPipesModule } from "ngx-pipes";
 import { MatMenuModule } from "@angular/material/menu";
-import { MatSelect, MatSelectModule } from "@angular/material/select";
+import { MatSelectModule } from "@angular/material/select";
 import {
   MatDialog,
   MatDialogActions,
@@ -30,9 +29,7 @@ import {
   MatDialogTitle,
 } from "@angular/material/dialog";
 import {
-  IItem,
   IPage,
-  IDefaultValues,
   getItemNameById,
   IAllCollection,
   IUser,
@@ -56,15 +53,11 @@ import {
 } from "@angular/fire/auth";
 import {
   combineLatest,
-  lastValueFrom,
   map,
   Observable,
-  of,
   Subject,
-  switchMap,
   take,
   takeUntil,
-  tap,
 } from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { VehicleTypesService } from "./services/vehicleTypes/vehicle-types.service";
@@ -80,6 +73,8 @@ import {
 } from "./shared/confirmation-dialog/confirmation-dialog.component";
 import { UsersService } from "./services/users/users.service";
 import { DashboardComponent } from "./shared/dashboard/dashboard.component";
+import { DashboardService } from "./services/dashboard/dashboard.service";
+import moment from "moment";
 
 @Component({
   selector: "app-component",
@@ -127,6 +122,7 @@ export class AppComponent implements OnDestroy {
   readonly paymentByService = inject(PaymentByService);
   readonly usersService = inject(UsersService);
   readonly breakpointObserver = inject(BreakpointObserver);
+  readonly dashboardService = inject(DashboardService);
   readonly snackBar = inject(MatSnackBar);
   getItemNameById = getItemNameById;
 
@@ -178,12 +174,18 @@ export class AppComponent implements OnDestroy {
           inventory,
           vehicleTypes,
           vehicles,
-          maintenances,
+          maintenances: maintenances.sort((a, b) => {
+            const monthA: moment.Moment = moment(a.month, "YYYY-MM");
+            const monthB: moment.Moment = moment(b.month, "YYYY-MM");
+            return monthA.diff(monthB);
+          }),
           inventoryItemStatus,
           payments,
           paymentsBy,
           users,
         };
+
+        this.dashboardService.allCollection$.next(allCollection);
 
         return [
           this.flatsService.getPage(allCollection),
@@ -219,10 +221,16 @@ export class AppComponent implements OnDestroy {
   selectedDate = signal<string>(
     `${new Date().getFullYear()}-${new Date().getMonth() + 1}`
   );
+  selectedYear = signal<string>(
+    `${new Date().getFullYear()}`
+  );
 
   constructor() {
     effect(() => {
       this.paymentsService.selectedMonth.next(this.selectedDate());
+    });
+    effect(() => {
+      this.maintenanceService.selectedYear.next(this.selectedYear());
     });
 
     user(this.auth).subscribe((userDetails) => {

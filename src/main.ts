@@ -13,10 +13,11 @@ import {
   MatNativeDateModule,
 } from '@angular/material/core';
 import { AppComponent } from './app/app.component';
+import { provideCharts, withDefaultRegisterables, } from 'ng2-charts';
 
 /* eslint-disable no-console */
-console.info('Angular CDK version', CDK_VERSION.full);
-console.info('Angular Material version', MAT_VERSION.full);
+/* console.info('Angular CDK version', CDK_VERSION.full);
+console.info('Angular Material version', MAT_VERSION.full); */
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -36,5 +37,6 @@ bootstrapApplication(AppComponent, {
     ),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()),
+    provideCharts(withDefaultRegisterables()),
   ],
 }).catch((err) => console.error(err));

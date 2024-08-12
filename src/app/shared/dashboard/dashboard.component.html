@@ -1,1 +1,41 @@
-<p>dashboard works!</p>
+<div class="list-group col-md-8 offset-md-3 mt-2 position-relative">
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="center">
+    <mat-tab label="Maintainenace">
+      <ng-container *ngIf="dashboardService.maintainenaceChatData$ | async as chartOptions" >
+        <highcharts-chart
+          [Highcharts]="Highcharts"
+          [options]="chartOptions.config"
+          [style.height.px]="chartOptions.height"
+          style="
+            width: 100%;
+            max-height: calc(100vh - 140px);
+            min-height: 150px;
+            display: block;
+          "
+        >
+        </highcharts-chart>
+      </ng-container>
+    </mat-tab>
+    <mat-tab label="Flats Payments Status">
+      <!-- <pre>{{ dashboardService.flatsMaintainenaceChatData$ | async | json }}</pre> -->
+      <ng-container *ngIf="dashboardService.flatsMaintainenaceChatData$ | async as chartOptions2" >
+        <highcharts-chart
+          [Highcharts]="Highcharts"
+          [options]="chartOptions2.config"
+          [style.height]="'calc(100vh - 140px)'"
+          style="
+            width: 100%;
+            max-height: calc(100vh - 140px);
+            min-height: 150px;
+            display: block;
+          "
+        >
+        </highcharts-chart>
+      </ng-container>
+    </mat-tab>
+    <!-- 
+      <mat-tab label="Water Bill - 2024">
+        <pre>{{ dashboardService.paymentsByMaintenance$ | async | json }}</pre>
+      </mat-tab> -->
+  </mat-tab-group>
+</div>

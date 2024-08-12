@@ -20,6 +20,7 @@ export interface IVehicle extends IItem {
 
 export interface IIncome extends IItem {
   month: string;
+  year: string;
   flats: string[];
   amount: number;
 }

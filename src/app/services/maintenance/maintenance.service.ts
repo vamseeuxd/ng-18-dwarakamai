@@ -1,6 +1,11 @@
 import { inject, Injectable } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { getPage, IAllCollection, IIncome, IPageService } from "src/app/interfaces";
+import {
+  getPage,
+  IAllCollection,
+  IIncome,
+  IPageService,
+} from "src/app/interfaces";
 import { FirestoreBase } from "../firestore-base";
 import { PaymentsService } from "../Payments/payments.service";
 import moment from "moment";
@@ -18,10 +23,15 @@ import {
 @Injectable({
   providedIn: "root",
 })
-export class MaintenanceService extends FirestoreBase<IIncome> implements IPageService {
+export class MaintenanceService
+  extends FirestoreBase<IIncome>
+  implements IPageService
+{
   readonly dialog = inject(MatDialog);
   readonly snackBar = inject(MatSnackBar);
   readonly paymentsService = inject(PaymentsService);
+  selectedYear: BehaviorSubject<string> = new BehaviorSubject("");
+  selectedYear$ = this.selectedYear.asObservable();
 
   constructor() {
     super({
@@ -29,9 +39,39 @@ export class MaintenanceService extends FirestoreBase<IIncome> implements IPageS
       orderByField: ORDER_BY_FIELD,
       idField: ID_FIELD,
     });
+    this.initializeItems();
   }
 
-  getPage({flats, floors, vendors, expenses, inventory, vehicleTypes, vehicles, maintenances, inventoryItemStatus, payments, paymentsBy}: IAllCollection) {
+  private initializeItems() {
+    this.items$ = this.selectedYear$.pipe(
+      switchMap((selectedYear) => {
+        return this.getMaintenanceByDate(selectedYear);
+      })
+    );
+  }
+
+  getMaintenanceByDate(year: string) {
+    const collectionRef = collection(this.firestore, `maintenances`);
+    const queryRef = query(
+      collectionRef,
+      where("year", "==", moment(year, "YYYY").format("YYYY"))
+    ) as Query<IIncome>;
+    return collectionData<IIncome>(queryRef, { idField: "id" });
+  }
+
+  getPage({
+    flats,
+    floors,
+    vendors,
+    expenses,
+    inventory,
+    vehicleTypes,
+    vehicles,
+    maintenances,
+    inventoryItemStatus,
+    payments,
+    paymentsBy,
+  }: IAllCollection) {
     return getPage(
       ENTITY_NAME,
       COLLECTION_NAME,
@@ -43,16 +83,23 @@ export class MaintenanceService extends FirestoreBase<IIncome> implements IPageS
         return `
         <div class="m-0 p-0 pe-4">
           <div class="d-flex justify-content-between align-items-center">
-            <span><i class="fa-solid fa-screwdriver-wrench text-danger"></i> ${moment(item.month, "YYYY-MM").format("MMM-YYYY")}</span>
+            <span><i class="fa-solid fa-screwdriver-wrench text-danger"></i> ${moment(
+              item.month,
+              "YYYY-MM"
+            ).format("MMM-YYYY")}</span>
             <span class="m-0 p-0 text-muted fs-7">${item.name}</span>
           </div>
           <div class="d-flex justify-content-between align-items-center">
             <span>
-              <span class="text-success"> ${new Intl.NumberFormat( "en-IN" ).format(item.amount || 0)} ₹ </span> 
+              <span class="text-success"> ${new Intl.NumberFormat(
+                "en-IN"
+              ).format(item.amount || 0)} ₹ </span> 
               <span class="text-danger"><i class="fa-solid fa-xmark"></i></span>
               <span class="text-primary">${flats.length} Flats</span>
             </span>  
-            <span class="text-success fw-bold">${new Intl.NumberFormat( "en-IN" ).format(item.amount * flats.length || 0)} ₹</span>
+            <span class="text-success fw-bold">${new Intl.NumberFormat(
+              "en-IN"
+            ).format(item.amount * flats.length || 0)} ₹</span>
           </div>
         </div>`;
       },
@@ -108,7 +155,14 @@ export class MaintenanceService extends FirestoreBase<IIncome> implements IPageS
                     }
                   }
                 },
-                onFormChange: (form: NgForm, valueChanged: string): void => {},
+                onFormChange: (form: NgForm, valueChanged: string): void => {
+                  console.log(form.value);
+                  const year = form.value["month"].split("-")[0];
+                  console.log("year", year);
+                  if (year) {
+                    form.resetForm({ ...form.value, year });
+                  }
+                },
               };
               dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
             },
@@ -132,7 +186,14 @@ export class MaintenanceService extends FirestoreBase<IIncome> implements IPageS
               }
             }
           },
-          onFormChange: (form: NgForm, valueChanged: string): void => {},
+          onFormChange: (form: NgForm, valueChanged: string): void => {
+            console.log(form.value);
+            const year = form.value["month"].split("-")[0];
+            console.log("year", year);
+            if (year) {
+              form.resetForm({ ...form.value, year });
+            }
+          },
         };
         dialogRef = this.dialog.open(AddOrEditDialogComponent, { data });
       },
@@ -147,6 +208,14 @@ export class MaintenanceService extends FirestoreBase<IIncome> implements IPageS
 }
 
 import { IFormConfig, IItem } from "src/app/interfaces";
+import { BehaviorSubject, switchMap } from "rxjs";
+import {
+  collection,
+  collectionData,
+  Query,
+  query,
+  where,
+} from "@angular/fire/firestore";
 
 export const COLLECTION_NAME = "maintenances";
 export const ID_FIELD: keyof IItem = "id";
@@ -157,6 +226,7 @@ export const INITIAL_FORM_VALUES = {
   name: "",
   id: "",
   month: "",
+  year: "",
   amount: 0,
 };
 export const FORM_FIELDS: IFormConfig[] = [
@@ -176,6 +246,15 @@ export const FORM_FIELDS: IFormConfig[] = [
     defaultValue: "",
     dataProvider: () => [],
     label: "Maintenance Month",
+    required: true,
+  },
+  {
+    type: "hidden",
+    id: "year",
+    name: "year",
+    defaultValue: "",
+    dataProvider: () => [],
+    label: "Maintenance Year",
     required: true,
   },
   {
