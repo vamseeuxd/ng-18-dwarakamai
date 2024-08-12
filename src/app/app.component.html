@@ -53,7 +53,7 @@
     <div class="container-fluid">
       @if(isDashboard()){
         <app-dashboard/>
-        <div class="d-inline-block position-absolute" style="z-index: 1000;right: 100px;top: 100px;" cdkDrag>
+        <div class="d-inline-block position-absolute" style="z-index: 1000;right: 101px;top: 22px;" cdkDrag>
           <app-date-picker [isYearOnly]="true" class="shadow-sm border is-year-only" [(selectedDate)]="selectedYear" />
         </div>
       }
@@ -149,7 +149,7 @@
     <li class="list-group-item p-3 border-0 rounded-0" style="background: #fef1f4">
       <ul class="list-group rounded-0" style=" height: calc(100dvh - 120px); overflow-y: auto; overflow-x: hidden; " >
         @for(item of activePage()?.items; track item.id; let ind = $index){
-        <li class="list-group-item main-item d-flex justify-content-start align-items-center mb-2 rounded-0">
+        <li class="list-group-item main-item d-flex justify-content-start align-items-center rounded-0">
           <div class="col"> <span [innerHTML]="activePage()?.itemLabelCallBack(item)"></span> </div>
           @if(activePage()?.contentMenu?.showDeleteMenu || activePage()?.contentMenu?.showEditMenu || activePage()?.contentMenu?.otherMenus){
           <div class="position-absolute" style="top: calc(50% - 20.5px); right: 10px;">
@@ -176,12 +176,12 @@
       </div>
     }
     @if(activePage()?.id === 'payments'){
-      <div class="d-inline-block position-absolute bottom-0 start-0" cdkDrag>
+      <div class="d-inline-block position-absolute" style="z-index: 1000;right: 10px;top: -50px;" cdkDrag>
         <app-date-picker class="shadow-sm border" [(selectedDate)]="selectedDate" />
       </div>
     }
     @if(activePage()?.id === 'maintenances'){
-      <div class="d-inline-block position-absolute bottom-0 start-0" cdkDrag>
+      <div class="d-inline-block position-absolute" style="z-index: 1000;right: 10px;top: -50px;" cdkDrag>
         <app-date-picker [isYearOnly]="true" class="shadow-sm border is-year-only" [(selectedDate)]="selectedYear" />
       </div>
     }
